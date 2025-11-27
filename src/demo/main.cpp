@@ -62,12 +62,12 @@ int main()
     {
         while (is_running)
         {
-            printf("file object queue size = %lld  object count = %lld \n",
+            printf("file object queue size = %ld  object count = %ld \n",
                 file.get_object_queue_size(), file.get_object_count());
             std::this_thread::sleep_for(std::chrono::seconds(1));
         }
     });
-    printf("start time : %lld \n", posix_time_ns_uint64());
+    printf("start time : %ld \n", posix_time_ns_uint64());
     for (int i = 0; i < OBJECT_SIZE; i++)
     {
         auto* can_message = new BLF::CanMessage();

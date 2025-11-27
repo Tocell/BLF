@@ -7,6 +7,8 @@
 #include <fstream>
 #include <mutex>
 #include <iostream>
+#include <condition_variable>
+#include <thread>
 
 #include "file_statistics.h"
 #include "object_header_base.h"

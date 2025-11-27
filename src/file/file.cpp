@@ -1,5 +1,6 @@
 #include "file.h"
 #include <codecvt>
+#include <cstring>
 
 BLFSTART
 SYSTEMTIME getCurrentSystemTime() {
@@ -216,7 +217,7 @@ void File::close()
         file_statistics_.last_object_time = getCurrentSystemTime();
         file_.seekp(0);
         file_statistics_.write(*this);
-        printf("  end time : %lld object_count = %d  file_statistics_.object_count = %d \n", posix_time_ns_uint64(), object_count_, file_statistics_.object_count);
+        printf("  end time : %ld object_count = %d  file_statistics_.object_count = %d \n", posix_time_ns_uint64(), object_count_, file_statistics_.object_count);
         file_.close();
     }
 }

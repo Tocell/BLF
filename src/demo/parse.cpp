@@ -26,7 +26,7 @@ int main(int argc, char* argv[])
     {
         while (is_running)
         {
-            printf("file object queue size = %lld  object count = %lld \n",
+            printf("file object queue size = %ld  object count = %ld \n",
                 file.get_object_queue_size(), file.get_object_count());
             std::this_thread::sleep_for(std::chrono::seconds(3));
         }
@@ -46,7 +46,7 @@ int main(int argc, char* argv[])
             {
                 auto* obj = reinterpret_cast<BLF::CanMessage*>(object);
                 printf("object count = %d ",object_count);
-                printf("can object_timestamp = %lld", obj->object_timestamp);
+                printf("can object_timestamp = %ld", obj->object_timestamp);
                 printf("can channel: %d ",obj->channel);
                 printf("can id: %d ",obj->id);
                 printf("can dlc = %d ", obj->dlc);
@@ -62,7 +62,7 @@ int main(int argc, char* argv[])
             {
                 auto* obj = reinterpret_cast<BLF::CanFdMessage*>(object);
                 printf("object count = %d ",object_count);
-                printf("canfd object_timestamp = %lld", obj->object_timestamp);
+                printf("canfd object_timestamp = %ld", obj->object_timestamp);
                 printf("canfd channel: %d ",obj->channel);
                 printf("canfd id: %d ",obj->id);
                 printf("canfd dlc = %d ", obj->dlc);
@@ -79,7 +79,7 @@ int main(int argc, char* argv[])
             {
                 auto* obj = reinterpret_cast<BLF::CanFdMessage64*>(object);
                 printf("object count = %d ",object_count);
-                printf("canfd64 object_timestamp = %lld ", obj->object_timestamp);
+                printf("canfd64 object_timestamp = %ld ", obj->object_timestamp);
                 printf("canfd64 channel: %d ",obj->channel);
                 printf("canfd64 id: %d ",obj->id);
                 printf("canfd64 dlc = %d ", obj->dlc);
@@ -96,7 +96,7 @@ int main(int argc, char* argv[])
             {
                 auto* obj = reinterpret_cast<BLF::FlexrayVFrReceiveMsgEx*>(object);
                 printf("object count = %d ",object_count);
-                printf("flexray  object_timestamp = %lld ", obj->object_timestamp);
+                printf("flexray  object_timestamp = %ld ", obj->object_timestamp);
                 printf("flexray  channel = %d ", obj->channel);
                 printf("flexray  channel_mask = %d ", obj->channel_mask);
                 printf("flexray  frame_id: %d ",obj->frame_id);
@@ -122,7 +122,7 @@ int main(int argc, char* argv[])
                 printf("lin_msg object_flags = %d ",obj->object_flags);
                 printf("lin_msg client_index = %d ",obj->client_index);
                 printf("lin_msg object_version = %d ",obj->object_version);
-                printf("lin_msg object_timestamp = %lld ",obj->object_timestamp);
+                printf("lin_msg object_timestamp = %ld ",obj->object_timestamp);
                 printf("lin_msg channel = %d ", obj->channel);
                 printf("lin_msg dlc = %d ", obj->dlc);
                 printf("lin_msg id = %d ", obj->id);
@@ -144,7 +144,7 @@ int main(int argc, char* argv[])
 
     getchar();
     printf("compression_level = %d\n",file_statistics_.compression_level);
-    printf("file_size = %lld\n",file_statistics_.file_size);
+    printf("file_size = %ld\n",file_statistics_.file_size);
     printf("object_count = %d\n",file_statistics_.object_count);
     printf("measurement_start_time = %d-%d-%d %d:%d:%d\n",file_statistics_.measurement_start_time.year,file_statistics_.measurement_start_time.month,
         file_statistics_.measurement_start_time.day,file_statistics_.measurement_start_time.hour,file_statistics_.measurement_start_time.minute,
