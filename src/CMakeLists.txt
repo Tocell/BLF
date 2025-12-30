@@ -1,40 +1,22 @@
-find_package(nlohmann_json REQUIRED)
-find_package(spdlog REQUIRED)
 find_package(benchmark REQUIRED)
 find_package(ZLIB REQUIRED)
 
-file(GLOB_RECURSE SOURCE
-        ${CMAKE_SOURCE_DIR}/src/file/*.cpp
-        ${CMAKE_SOURCE_DIR}/src/object/*.cpp
-        ${CMAKE_SOURCE_DIR}/src/object/can_message/*.cpp
-        ${CMAKE_SOURCE_DIR}/src/object/lin_message/*.cpp
-        ${CMAKE_SOURCE_DIR}/src/object/flexray_message/*.cpp
-        ${CMAKE_SOURCE_DIR}/src/object/object_deader/*.cpp
+file(GLOB SOURCE
+    ${CMAKE_CURRENT_SOURCE_DIR}/*.cpp
 )
 
-add_library(blf SHARED ${SOURCE})
-target_include_directories(blf PUBLIC
-        ${CMAKE_CURRENT_SOURCE_DIR}/
-        ${CMAKE_CURRENT_SOURCE_DIR}/file
-        ${CMAKE_CURRENT_SOURCE_DIR}/object
-        ${CMAKE_CURRENT_SOURCE_DIR}/object/can_message
-        ${CMAKE_CURRENT_SOURCE_DIR}/object/lin_message
-        ${CMAKE_CURRENT_SOURCE_DIR}/object/flexray_message
-        ${CMAKE_CURRENT_SOURCE_DIR}/object/object_header
-)
+add_library(blf SHARED test.cpp ${SOURCE})
+
 target_link_libraries(blf PRIVATE
-        spdlog::spdlog
         ZLIB::ZLIB
+        utility
 )
-
-add_executable(demo demo/main.cpp)
-target_link_libraries(demo PUBLIC blf)
-
-add_executable(parse demo/parse.cpp)
-target_link_libraries(parse PUBLIC blf)
-
-add_executable(benchmark_test demo/benchmark.cpp)
-target_link_libraries(benchmark_test PUBLIC blf benchmark::benchmark)
+target_include_directories(blf PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}/include
+)
+if (WIN32)
+    target_compile_definitions(blf PRIVATE CANCONTROL_EXPORTS)
+endif ()
 
 if (WIN32)
     # 导出CANCONTROL_API 到lib中
@@ -44,3 +26,6 @@ if (WIN32)
     # 指定Windows版本
     target_compile_definitions(blf PRIVATE _WIN32_WINNT=0x0A00)
 endif ()
+
+add_subdirectory(utility)
+add_dependencies(blf utility)
