@@ -2,10 +2,15 @@ find_package(benchmark REQUIRED)
 find_package(ZLIB REQUIRED)
 
 file(GLOB SOURCE
-    ${CMAKE_CURRENT_SOURCE_DIR}/*.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/*.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/api/*.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/blf/*.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/core/*.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/io/*.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/asc/*.cpp
 )
 
-add_library(blf SHARED test.cpp ${SOURCE})
+add_library(blf SHARED ${SOURCE})
 
 target_link_libraries(blf PRIVATE
         ZLIB::ZLIB
@@ -13,14 +18,16 @@ target_link_libraries(blf PRIVATE
 )
 target_include_directories(blf PRIVATE
         ${CMAKE_CURRENT_SOURCE_DIR}/include
+        ${CMAKE_CURRENT_SOURCE_DIR}/blf
+        ${CMAKE_CURRENT_SOURCE_DIR}/api
+        ${CMAKE_CURRENT_SOURCE_DIR}/core
+        ${CMAKE_CURRENT_SOURCE_DIR}/io
+        ${CMAKE_CURRENT_SOURCE_DIR}/asc
 )
-if (WIN32)
-    target_compile_definitions(blf PRIVATE CANCONTROL_EXPORTS)
-endif ()
 
 if (WIN32)
-    # 导出CANCONTROL_API 到lib中
-    target_compile_definitions(blf PRIVATE TWBLF_EXPORTS)
+    # 导出 BLF_EXPORTS 到lib中
+    target_compile_definitions(blf PRIVATE BLF_EXPORTS)
     # 链接Windows所需标准库
     target_link_libraries(blf PRIVATE ws2_32 iphlpapi winmm)
     # 指定Windows版本

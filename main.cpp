@@ -1,10 +1,10 @@
 #include <iostream>
-#include "src/test.h"
-
+#include "src/include/logger.h"
+#include "src/include/types.h"
 
 int main()
 {
-	addition(100, 200);
+	BLF::Logger::create(BLF::FileFormat::BLF);
 
 	return 0;
 }
