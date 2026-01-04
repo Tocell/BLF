@@ -6,24 +6,31 @@
 namespace BLF
 {
 
+BlfLogger::BlfLogger()
+{
+	writer_ = WriterRegistry::get_instance().create_writers(FileFormat::BLF);
+}
+
 bool BlfLogger::open(const std::string& filepath, bool append)
 {
+	file_writer_.open(filepath, append);
 	return true;
 }
 
 void BlfLogger::close()
 {
-
-}
-
-void BlfLogger::register_writer()
-{
-	writer_[BusType::CAN] = std::make_unique<CanMessageWriter>();
+	file_writer_.close();
 }
 
 bool BlfLogger::write(const BusMessage& msg)
 {
-	return true;
+	const auto bus_type = msg.get_bus_type();
+	auto it = writer_.find(bus_type);
+	if (it == writer_.end())
+	{
+		return false;
+	}
+	return it->second->write(msg, file_writer_);
 }
 
 bool BlfLogger::is_open() const

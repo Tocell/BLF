@@ -8,6 +8,7 @@ file(GLOB SOURCE
         ${CMAKE_CURRENT_SOURCE_DIR}/core/*.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/io/*.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/asc/*.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/object/can/*.cpp
 )
 
 add_library(blf SHARED ${SOURCE})
@@ -23,6 +24,7 @@ target_include_directories(blf PRIVATE
         ${CMAKE_CURRENT_SOURCE_DIR}/core
         ${CMAKE_CURRENT_SOURCE_DIR}/io
         ${CMAKE_CURRENT_SOURCE_DIR}/asc
+        ${CMAKE_CURRENT_SOURCE_DIR}/object/can
 )
 
 if (WIN32)

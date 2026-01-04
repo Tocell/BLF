@@ -3,6 +3,7 @@
 
 #include "../include/logger.h"
 #include "imessage_writer.h"
+#include "../api/logger_registrar.h"
 
 #include <fstream>
 #include <map>
@@ -13,13 +14,13 @@ namespace BLF
 class BlfLogger : public Logger
 {
 public:
+	BlfLogger();
+
 	~BlfLogger() override = default;
 
 	bool open(const std::string& filepath, bool append) override;
 
 	void close() override;
-
-	bool write(const BusMessage& msg) override;
 
 	[[nodiscard]] bool is_open() const override;
 
@@ -29,12 +30,17 @@ public:
 
 	void flush() override;
 
-private:
-	void register_writer();
+	bool write(const BusMessage& msg) override;
 
+private:
 	std::ofstream file_;
 	std::map<BusType, std::unique_ptr<IMessageWriter>> writer_;
+	FileWriter file_writer_;
 };
+
+
+static LoggerRegistrar<BlfLogger> registrar(FileFormat::BLF);
+
 
 }
 

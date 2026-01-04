@@ -20,15 +20,13 @@ public:
 
     [[nodiscard]] virtual bool is_open() const = 0;
 
-    virtual bool write(const BusMessage& msg) = 0;
-
-    // virtual std::unique_ptr<BusMessage> read() = 0;
-
     [[nodiscard]] virtual uint64_t get_message_count() const = 0;
 
     [[nodiscard]] virtual uint64_t get_file_size() const = 0;
 
     virtual void flush() = 0;
+
+    virtual bool write(const BusMessage& msg) = 0;
 };
 
 }

@@ -1,46 +1,61 @@
-// #include "asc_logger.h"
-//
-// namespace BLF
-// {
-//
-// BLF_API std::unique_ptr<Logger> Logger::createAsc()
-// {
-// 	return std::make_unique<AscLogger>();
-// }
-//
-// 	bool AscLogger::open(const std::string& filepath, bool append)
-// {
-// 	return true;
-// }
-//
-// 	void AscLogger::close()
-// {
-//
-// }
-//
-// 	bool AscLogger::is_open() const
-// {
-// 	return true;
-// }
-//
-// 	uint64_t AscLogger::get_message_count() const
-// {
-// 	return 0;
-// }
-//
-// 	uint64_t AscLogger::get_file_size() const
-// {
-// 	return 0;
-// }
-//
-// 	// std::unique_ptr<BusMessage> Logger::read()
-// 	// {
-// 	//
-// 	// }
-//
-// 	void AscLogger::flush()
-// {
-//
-// }
-//
-// }
+#include "asc_logger.h"
+#include "can_message_asc_writer.h"
+#include "writer_registry.h"
+
+namespace BLF
+{
+
+AscLogger::AscLogger()
+{
+	writer_ = WriterRegistry::get_instance().create_writers(FileFormat::ASC);
+}
+
+bool AscLogger::open(const std::string& filepath, bool append)
+{
+	file_writer_.open(filepath, append);
+	return true;
+}
+
+void AscLogger::close()
+{
+
+}
+
+bool AscLogger::is_open() const
+{
+	return true;
+}
+
+uint64_t AscLogger::get_message_count() const
+{
+	return 0;
+}
+
+uint64_t AscLogger::get_file_size() const
+{
+	return 0;
+}
+
+bool AscLogger::write(const BusMessage& msg)
+{
+	const auto bus_type = msg.get_bus_type();
+	auto it = writer_.find(bus_type);
+	if (it == writer_.end())
+	{
+		return false;
+	}
+	return it->second->write(msg, file_writer_);
+}
+
+
+void AscLogger::flush()
+{
+
+}
+
+void AscLogger::register_writer()
+{
+	writer_[BusType::CAN] = std::make_unique<CanMessageAscWriter>();
+}
+
+}

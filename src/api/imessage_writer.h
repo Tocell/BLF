@@ -4,6 +4,7 @@
 #include <iosfwd>
 
 #include "../include/types.h"
+#include "file_writer.h"
 
 namespace BLF
 {
@@ -12,7 +13,7 @@ class IMessageWriter
 public:
 	virtual ~IMessageWriter() = default;
 
-	virtual bool write(const BusMessage& msg, std::ostream& oout_stream) const = 0;
+	[[nodiscard]] virtual bool write(const BusMessage& msg, FileWriter& writer) const = 0;
 };
 }
 
