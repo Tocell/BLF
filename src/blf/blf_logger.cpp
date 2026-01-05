@@ -3,6 +3,8 @@
 
 #include <iostream>
 
+#include "can_message.h"
+
 namespace BLF
 {
 
@@ -11,9 +13,9 @@ BlfLogger::BlfLogger()
 	writer_ = WriterRegistry::get_instance().create_writers(FileFormat::BLF);
 }
 
-bool BlfLogger::open(const std::string& filepath, bool append)
+bool BlfLogger::open(const std::string& filepath, int32_t mode, bool append)
 {
-	file_writer_.open(filepath, append);
+	file_writer_.open(filepath, mode, append);
 	return true;
 }
 

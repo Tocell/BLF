@@ -14,7 +14,7 @@ public:
 
     virtual ~Logger() = default;
 
-    virtual bool open(const std::string& filepath, bool append) = 0;
+    virtual bool open(const std::string& filepath, int32_t mode, bool append) = 0;
 
     virtual void close() = 0;
 

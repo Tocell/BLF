@@ -10,9 +10,9 @@ AscLogger::AscLogger()
 	writer_ = WriterRegistry::get_instance().create_writers(FileFormat::ASC);
 }
 
-bool AscLogger::open(const std::string& filepath, bool append)
+bool AscLogger::open(const std::string& filepath, int32_t mode, bool append)
 {
-	file_writer_.open(filepath, append);
+	file_writer_.open(filepath, mode, append);
 	return true;
 }
 

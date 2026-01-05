@@ -14,7 +14,7 @@ public:
 
 	[[nodiscard]] BusType get_bus_type() const override;
 
-
+	const CanFrame& get_frame() const;
 private:
 	struct Impl;
 	std::unique_ptr<Impl> impl;

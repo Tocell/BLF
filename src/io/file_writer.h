@@ -14,7 +14,7 @@ public:
 	FileWriter();
 	~FileWriter();
 
-	bool open(const std::string& filename, bool append = false);
+	bool open(const std::string& filename, int32_t mode, bool append = false);
 
 	void close();
 
@@ -34,7 +34,6 @@ public:
 	uint64_t tell();
 
 	bool seek(uint64_t pos);
-
 
 private:
 	std::ofstream file_;

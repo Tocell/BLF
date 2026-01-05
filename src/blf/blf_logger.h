@@ -18,7 +18,7 @@ public:
 
 	~BlfLogger() override = default;
 
-	bool open(const std::string& filepath, bool append) override;
+	bool open(const std::string& filepath, int32_t mode, bool append) override;
 
 	void close() override;
 

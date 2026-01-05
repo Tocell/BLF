@@ -36,4 +36,9 @@ BLF_API void BLF::destroy_message(BusMessage* message)
 	delete message;
 }
 
+BLF_API const CanFrame& CanMessage::get_frame() const
+{
+	return impl->frame_;
+}
+
 }

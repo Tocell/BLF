@@ -11,17 +11,17 @@ FileWriter::~FileWriter()
 	close();
 }
 
-bool FileWriter::open(const std::string& filename, bool append)
+bool FileWriter::open(const std::string& filename, int32_t mode, bool append)
 {
 	close();
 	filename_ = filename;
-	auto mode = std::ios::binary | std::ios::out;
+	auto fmode = mode | std::ios::out;
 	if (append)
 	{
-		mode |= std::ios::app;
+		fmode |= std::ios::app;
 	}
 
-	file_.open(filename, mode);
+	file_.open(filename, fmode);
 	return file_.is_open();
 }
 
@@ -44,6 +44,12 @@ bool FileWriter::write(const uint8_t* data, size_t size)
 	{
 		return false;
 	}
+	std::cout << "write data:" << std::endl;
+	for (auto i = 0; i < size; i++)
+	{
+		printf("%d ", data[i]);
+	}
+	std::cout << std::endl;
 	file_.write(reinterpret_cast<const char*>(data), static_cast<std::streamsize>(size));
 	if (file_.fail()) {
 		std::cerr << "File write format error." << std::endl;

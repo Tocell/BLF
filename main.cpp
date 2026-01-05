@@ -8,7 +8,7 @@
 int main()
 {
 	auto logger = BLF::Logger::create(BLF::FileFormat::BLF);
-	logger->open("test.blf", true);
+	logger->open("test.blf", 0, true);
 	if (logger && logger->is_open())
 	{
 		std::cout << "file test.blf open successful." << std::endl;
