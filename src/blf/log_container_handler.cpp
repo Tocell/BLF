@@ -1,30 +1,12 @@
-#ifndef LOG_CONTAINER_H
-#define LOG_CONTAINER_H
-
+#include "log_container_handler.h"
+#include "zlib.h"
 #include <valarray>
 #include <iosfwd>
-
-#include "blf_structure.h"
-#include "zlib.h"
 
 namespace BLF
 {
 
-class LogContainerWriter
-{
-public:
-	LogContainerWriter();
-	~LogContainerWriter() = default;
-
-	void compress(uint16_t compression_method, int compression_level);
-
-	void uncompress();
-
-private:
-	LogContainer log_container_;
-};
-
-inline LogContainerWriter::LogContainerWriter()
+LogContainerHandler::LogContainerHandler()
 {
 	log_container_.header_base.signature = BL_OBJ_SIGNATURE;
 	log_container_.header_base.header_size = sizeof(ObjectHeaderBase);
@@ -33,7 +15,7 @@ inline LogContainerWriter::LogContainerWriter()
 	log_container_.header_base.object_type = BL_OBJ_TYPE_LOG_CONTAINER;
 }
 
-inline void LogContainerWriter::compress(uint16_t compression_method, int compression_level)
+void LogContainerHandler::compress(uint16_t compression_method, int compression_level)
 {
 	switch (compression_method)
 	{
@@ -63,7 +45,7 @@ inline void LogContainerWriter::compress(uint16_t compression_method, int compre
 	}
 }
 
-inline void LogContainerWriter::uncompress()
+void LogContainerHandler::uncompress()
 {
 	switch (log_container_.compression_method)
 	{
@@ -90,6 +72,19 @@ inline void LogContainerWriter::uncompress()
 	}
 }
 
+LogContainer& LogContainerHandler::get_logcontainer()
+{
+	return log_container_;
 }
 
-#endif //LOG_CONTAINER_H
+void LogContainerHandler::set_buffer(uint8_t* data, size_t size)
+{
+	memcpy(log_container_.compressed_file, data, size);
+}
+
+void LogContainerHandler::reset_logcontainer()
+{
+
+}
+
+}

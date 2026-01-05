@@ -5,6 +5,8 @@
 #include <fstream>
 #include <cstdint>
 
+#include "../blf/blf_structure.h"
+
 namespace BLF
 {
 
@@ -28,6 +30,8 @@ public:
 		return write(reinterpret_cast<const uint8_t*>(&obj), sizeof(T));
 	}
 
+	void append(const uint8_t* data, size_t size);
+
 	void flush();
 
 	// 定位当前文件指针位置
@@ -35,9 +39,18 @@ public:
 
 	bool seek(uint64_t pos);
 
+	[[nodiscard]] uint64_t get_pos() const;
+
+	void set_pos(uint64_t pos);
+
+	uint8_t* get_buffer();
+
 private:
-	std::ofstream file_;
-	std::string filename_;
+	std::ofstream file_{};
+	std::string filename_{};
+
+	uint8_t buffer_[BUFFER_MAX_SIZE]{};
+	uint64_t pos_;
 };
 
 }

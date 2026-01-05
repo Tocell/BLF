@@ -4,12 +4,15 @@
 #include <iostream>
 
 #include "can_message.h"
+#include "blf_structure.h"
 
 namespace BLF
 {
 
 BlfLogger::BlfLogger()
-	: frame_count_(0)
+	: frame_count_(0),
+	compression_method_(0),
+	compression_level_(0)
 {
 	writer_ = WriterRegistry::get_instance().create_writers(FileFormat::BLF);
 }
@@ -30,7 +33,7 @@ void BlfLogger::close()
 	file_statistics_writer_.update_file_header(file_writer_);
 	file_writer_.close();
 }
-
+	// std::map<BusType, std::unique_ptr<IMessageWriter>> writer_;
 bool BlfLogger::write(const BusMessage& msg)
 {
 	const auto bus_type = msg.get_bus_type();
@@ -39,7 +42,25 @@ bool BlfLogger::write(const BusMessage& msg)
 	{
 		return false;
 	}
-	return it->second->write(msg, file_writer_);
+
+	bool result;
+	if ((file_writer_.get_pos() + 400) >= BUFFER_MAX_SIZE)
+	{
+		log_container_writer_.set_buffer(file_writer_.get_buffer(), file_writer_.get_pos());
+		log_container_writer_.compress(compression_method_, compression_level_);
+		flush_logcontainer(log_container_writer_.get_logcontainer());
+	}
+
+	result = it->second->write(msg, file_writer_);
+	frame_count_++;
+
+	return result;
+}
+
+void BlfLogger::flush_logcontainer(LogContainer& log_container)
+{
+	auto size = calculate_size() + static_cast<size_t>(log_container.compressed_file_size);
+	file_writer_.write(reinterpret_cast<uint8_t*>(&log_container), size);
 }
 
 bool BlfLogger::is_open() const
@@ -64,7 +85,24 @@ void BlfLogger::flush()
 
 void BlfLogger::set_compres_level(int32_t compres_level)
 {
+	if (compres_level > compression_level_)
+	{
+		compression_method_ = 2;
+	}
+	else
+	{
+		compression_method_ = 0;
+	}
+	compression_level_ = compres_level;
 	file_statistics_writer_.set_compres_level(compres_level);
+}
+
+size_t BlfLogger::calculate_size()
+{
+	return sizeof(ObjectHeaderBase) +
+		sizeof(uint16_t) + sizeof(uint16_t) +
+		sizeof(uint32_t) + sizeof(uint32_t) +
+		sizeof(uint32_t);
 }
 
 }

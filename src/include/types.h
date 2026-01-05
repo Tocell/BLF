@@ -28,7 +28,8 @@ enum class BusType {
 	CAN_FD,
 	LIN,
 	FLEXRAY,
-	ETHERNET
+	ETHERNET,
+	LOG_CONTAINER
 };
 
 

@@ -11,7 +11,7 @@ bool CanMessageBlfWriter::write(const BusMessage& msg, FileWriter& writer) const
 {
 	const auto& can_msg = dynamic_cast<const CanMessage&>(msg);
 	const CanFrame& can_frame = can_msg.get_frame();
-	writer.write_struct(can_frame);
+	writer.append(reinterpret_cast<const uint8_t*>(&can_frame), sizeof(CanFrame));
 	return true;
 }
 }

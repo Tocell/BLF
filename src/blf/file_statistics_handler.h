@@ -10,12 +10,12 @@
 namespace BLF
 {
 
-class FileStatisticsWriter
+class FileStatisticsHandler
 {
 public:
-	FileStatisticsWriter();
+	FileStatisticsHandler();
 
-	~FileStatisticsWriter() = default;
+	~FileStatisticsHandler() = default;
 
 	void set_compres_level(int32_t compres_level);
 
@@ -33,7 +33,7 @@ private:
 	FileStatistics file_statistics_{};
 };
 
-inline SYSTEMTIME FileStatisticsWriter::getCurrentSystemTime() {
+inline SYSTEMTIME FileStatisticsHandler::getCurrentSystemTime() {
 	SYSTEMTIME st = {};
 	auto now = std::chrono::system_clock::now();
 	auto time = std::chrono::system_clock::to_time_t(now);
@@ -51,7 +51,7 @@ inline SYSTEMTIME FileStatisticsWriter::getCurrentSystemTime() {
 	return st;
 }
 
-inline FileStatisticsWriter::FileStatisticsWriter()
+inline FileStatisticsHandler::FileStatisticsHandler()
 {
 	file_statistics_.signature = BL_FILE_SIGNATURE;
 	file_statistics_.statistics_size = sizeof(FileStatistics);
@@ -70,13 +70,13 @@ inline FileStatisticsWriter::FileStatisticsWriter()
 	memset(file_statistics_.reserved_file_statistics, 0, sizeof(file_statistics_.reserved_file_statistics));
 }
 
-inline bool FileStatisticsWriter::write_file_header(FileWriter& writer)
+inline bool FileStatisticsHandler::write_file_header(FileWriter& writer)
 {
 	writer.write_struct(file_statistics_);
 	return true;
 }
 
-inline bool FileStatisticsWriter::update_file_header(FileWriter& writer)
+inline bool FileStatisticsHandler::update_file_header(FileWriter& writer)
 {
 	file_statistics_.uncompressed_file_size = file_statistics_.statistics_size;
 	file_statistics_.last_object_time = getCurrentSystemTime();
@@ -84,17 +84,17 @@ inline bool FileStatisticsWriter::update_file_header(FileWriter& writer)
 	return true;
 }
 
-inline void FileStatisticsWriter::set_compres_level(int32_t compres_level)
+inline void FileStatisticsHandler::set_compres_level(int32_t compres_level)
 {
 	file_statistics_.compression_level = compres_level;
 }
 
-inline void FileStatisticsWriter::update_frame_count(int32_t frame_count)
+inline void FileStatisticsHandler::update_frame_count(int32_t frame_count)
 {
 	file_statistics_.object_count = frame_count;
 }
 
-inline void FileStatisticsWriter::update_file_size(uint64_t file_size)
+inline void FileStatisticsHandler::update_file_size(uint64_t file_size)
 {
 	file_statistics_.file_size = file_size;
 }

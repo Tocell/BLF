@@ -4,7 +4,11 @@
 
 namespace BLF{
 
-FileWriter::FileWriter() = default;
+FileWriter::FileWriter()
+	: pos_(0)
+{
+
+}
 
 FileWriter::~FileWriter()
 {
@@ -44,12 +48,12 @@ bool FileWriter::write(const uint8_t* data, size_t size)
 	{
 		return false;
 	}
-	std::cout << "write data:" << std::endl;
-	for (auto i = 0; i < size; i++)
-	{
-		printf("%d ", data[i]);
-	}
-	std::cout << std::endl;
+	// std::cout << "write data:" << std::endl;
+	// for (auto i = 0; i < size; i++)
+	// {
+	// 	printf("%d ", data[i]);
+	// }
+	// std::cout << std::endl;
 	file_.write(reinterpret_cast<const char*>(data), static_cast<std::streamsize>(size));
 	if (file_.fail()) {
 		std::cerr << "File write format error." << std::endl;
@@ -58,6 +62,22 @@ bool FileWriter::write(const uint8_t* data, size_t size)
 		std::cerr << "File write hardware error." << std::endl;
 	}
 	return file_.good();
+}
+
+void FileWriter::append(const uint8_t* data, size_t size)
+{
+	memcpy(buffer_, data, size);
+	pos_ += size;
+}
+
+uint64_t FileWriter::get_pos() const
+{
+	return pos_;
+}
+
+void FileWriter::set_pos(uint64_t pos)
+{
+	pos_ = pos;
 }
 
 void FileWriter::flush()
@@ -86,6 +106,11 @@ bool FileWriter::seek(uint64_t pos)
 	}
 	file_.seekp(static_cast<std::streamoff>(pos));
 	return file_.good();
+}
+
+uint8_t* FileWriter::get_buffer()
+{
+	return buffer_;
 }
 
 }
