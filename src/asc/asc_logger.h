@@ -31,6 +31,8 @@ public:
 
 	void flush() override;
 
+	void set_compres_level(int32_t compres_level) override;
+
 private:
 	void register_writer();
 

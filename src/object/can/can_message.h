@@ -10,11 +10,15 @@ class BLF_API CanMessage : public BusMessage
 {
 public:
 	explicit CanMessage(const CanFrame& frame_data);
-	~CanMessage();
+	~CanMessage() override;
 
 	[[nodiscard]] BusType get_bus_type() const override;
 
-	const CanFrame& get_frame() const;
+	[[nodiscard]] uint64_t get_timestamp() const override;
+
+	void set_timestamp(uint64_t timestamp) override;
+
+	[[nodiscard]] const CanFrame& get_frame() const;
 private:
 	struct Impl;
 	std::unique_ptr<Impl> impl;

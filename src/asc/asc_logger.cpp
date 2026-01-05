@@ -58,4 +58,9 @@ void AscLogger::register_writer()
 	writer_[BusType::CAN] = std::make_unique<CanMessageAscWriter>();
 }
 
+void AscLogger::set_compres_level(int32_t compres_level)
+{
+
+}
+
 }

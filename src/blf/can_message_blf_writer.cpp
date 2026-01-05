@@ -15,4 +15,3 @@ bool CanMessageBlfWriter::write(const BusMessage& msg, FileWriter& writer) const
 	return true;
 }
 }
-

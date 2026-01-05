@@ -5,6 +5,8 @@
 
 #define BL_OBJ_SIGNATURE                 0x4A424F4C       /* object signature */
 
+#define BL_FILE_SIGNATURE                0x47474F4C
+
 #define BL_OBJ_TYPE_UNKNOWN                       0       /* unknown object */
 #define BL_OBJ_TYPE_CAN_MESSAGE                   1       /* CAN message object */
 #define BL_OBJ_TYPE_CAN_ERROR                     2       /* CAN error frame object */
@@ -209,7 +211,6 @@ struct ObjectHeaderBase {
 };
 
 struct ObjectHeader {
-	ObjectHeaderBase base;
 	uint32_t time_flags;     ///< Flags (e.g., 0x00000001 = 10microsecond timestamp)
 	uint16_t client_index;     ///< Reserved
 	uint16_t object_version;   ///< Object-specific version
@@ -217,7 +218,6 @@ struct ObjectHeader {
 };
 
 struct ObjectHeader2 {
-	ObjectHeaderBase base;
 	uint32_t object_flags;
 	uint8_t timestamp_status;  ///< Timestamp status flags
 	uint8_t reserved;

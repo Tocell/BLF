@@ -9,6 +9,7 @@ namespace BLF
 {
 
 BlfLogger::BlfLogger()
+	: frame_count_(0)
 {
 	writer_ = WriterRegistry::get_instance().create_writers(FileFormat::BLF);
 }
@@ -16,11 +17,17 @@ BlfLogger::BlfLogger()
 bool BlfLogger::open(const std::string& filepath, int32_t mode, bool append)
 {
 	file_writer_.open(filepath, mode, append);
+	file_statistics_writer_.write_file_header(file_writer_);
 	return true;
 }
 
 void BlfLogger::close()
 {
+	file_statistics_writer_.update_frame_count(frame_count_);
+	file_statistics_writer_.update_file_size(file_writer_.tell());
+
+	file_writer_.seek(0);
+	file_statistics_writer_.update_file_header(file_writer_);
 	file_writer_.close();
 }
 
@@ -53,6 +60,11 @@ uint64_t BlfLogger::get_file_size() const
 void BlfLogger::flush()
 {
 
+}
+
+void BlfLogger::set_compres_level(int32_t compres_level)
+{
+	file_statistics_writer_.set_compres_level(compres_level);
 }
 
 }
