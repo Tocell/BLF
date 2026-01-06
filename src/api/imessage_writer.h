@@ -13,7 +13,7 @@ class IMessageWriter
 public:
 	virtual ~IMessageWriter() = default;
 
-	[[nodiscard]] virtual bool write(const BusMessage& msg, FileWriter& writer) const = 0;
+	[[nodiscard]] virtual bool write(const BusMessage& msg, FileWriter& writer) = 0;
 };
 }
 

@@ -2,6 +2,7 @@
 #include "zlib.h"
 #include <valarray>
 #include <iosfwd>
+#include <iostream>
 
 namespace BLF
 {
@@ -9,14 +10,23 @@ namespace BLF
 LogContainerHandler::LogContainerHandler()
 {
 	log_container_.header_base.signature = BL_OBJ_SIGNATURE;
-	log_container_.header_base.header_size = sizeof(ObjectHeaderBase);
+	log_container_.header_base.header_size = sizeof(ObjectHeaderBase) + sizeof(ObjectHeader);
 	log_container_.header_base.header_version = 1;
 	log_container_.header_base.object_size = sizeof(ObjectHeaderBase) + log_container_.compressed_file_size;
 	log_container_.header_base.object_type = BL_OBJ_TYPE_LOG_CONTAINER;
 }
 
+size_t LogContainerHandler::calculate_size()
+{
+	return sizeof(ObjectHeaderBase) +
+		sizeof(uint16_t) + sizeof(uint16_t) +
+		sizeof(uint32_t) + sizeof(uint32_t) +
+		sizeof(uint32_t);
+}
+
 void LogContainerHandler::compress(uint16_t compression_method, int compression_level)
 {
+	log_container_.compression_method = compression_method;
 	switch (compression_method)
 	{
 	case 0:
@@ -24,20 +34,33 @@ void LogContainerHandler::compress(uint16_t compression_method, int compression_
 			log_container_.uncompressed_file,
 			4 * 1024 * 1024);
 		log_container_.compressed_file_size = log_container_.uncompressed_file_size;
+		log_container_.header_base.object_size = calculate_size() + log_container_.compressed_file_size;
+
 		break;
 	case 2:
 		{
-			uLong size = compressBound(log_container_.uncompressed_file_size);
-			int ret = ::compress2(log_container_.compressed_file,
-									&size,
-									log_container_.uncompressed_file,
+			uLong compress_size = compressBound(log_container_.uncompressed_file_size);
+			int ret = ::compress2(
+									reinterpret_cast<Byte*>(log_container_.compressed_file),
+									&compress_size,
+									reinterpret_cast<Byte*>(log_container_.uncompressed_file),
 									log_container_.uncompressed_file_size,
 									compression_level);
 			if (ret != Z_OK)
 			{
 				throw std::runtime_error("compression failed");
 			}
-			log_container_.compressed_file_size = static_cast<uint32_t>(size);
+			log_container_.compressed_file_size = static_cast<uint32_t>(compress_size);
+
+			if (log_container_.compressed_file_size % 4 != 0)
+			{
+				uint32_t padding = 4 - (log_container_.compressed_file_size % 4);
+				memset(log_container_.compressed_file + log_container_.compressed_file_size, 0, padding);
+				log_container_.compressed_file_size += padding;
+			}
+
+			log_container_.header_base.object_size = calculate_size() + log_container_.compressed_file_size;
+
 			break;
 		}
 	default:
@@ -79,7 +102,8 @@ LogContainer& LogContainerHandler::get_logcontainer()
 
 void LogContainerHandler::set_buffer(uint8_t* data, size_t size)
 {
-	memcpy(log_container_.compressed_file, data, size);
+	log_container_.uncompressed_file_size = size;
+	memcpy(log_container_.uncompressed_file, data, size);
 }
 
 void LogContainerHandler::reset_logcontainer()

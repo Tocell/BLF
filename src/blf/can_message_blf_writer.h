@@ -9,7 +9,13 @@ namespace BLF
 class CanMessageBlfWriter : public IMessageWriter
 {
 public:
-	[[nodiscard]] bool write(const BusMessage& msg, FileWriter& writer) const override;
+	CanMessageBlfWriter();
+	~CanMessageBlfWriter() override = default;
+	[[nodiscard]] bool write(const BusMessage& msg, FileWriter& writer) override;
+
+private:
+	ObjectHeaderBase header_base_{};
+	ObjectHeader header_{};
 };
 
 }

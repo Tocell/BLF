@@ -22,6 +22,8 @@ public:
 
 	void reset_logcontainer();
 
+	size_t calculate_size();
+
 private:
 	LogContainer log_container_{};
 };

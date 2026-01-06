@@ -6,6 +6,7 @@
 #include "blf_structure.h"
 
 #include <chrono>
+#include <iostream>
 
 namespace BLF
 {
@@ -56,7 +57,7 @@ inline FileStatisticsHandler::FileStatisticsHandler()
 	file_statistics_.signature = BL_FILE_SIGNATURE;
 	file_statistics_.statistics_size = sizeof(FileStatistics);
 	file_statistics_.api_number = 4080200;
-	file_statistics_.application_id = 0;
+	file_statistics_.application_id = 5;//0;
 	file_statistics_.compression_level = 0;
 	file_statistics_.application_major = 0;
 	file_statistics_.application_minor = 0;
@@ -80,6 +81,7 @@ inline bool FileStatisticsHandler::update_file_header(FileWriter& writer)
 {
 	file_statistics_.uncompressed_file_size = file_statistics_.statistics_size;
 	file_statistics_.last_object_time = getCurrentSystemTime();
+
 	writer.write_struct(file_statistics_);
 	return true;
 }

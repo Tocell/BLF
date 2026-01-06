@@ -5,7 +5,7 @@ namespace BLF
 
 static WriterRegistrar<CanMessageAscWriter> registrar(FileFormat::ASC, BusType::CAN);
 
-bool CanMessageAscWriter::write(const BusMessage& msg, FileWriter& writer) const
+bool CanMessageAscWriter::write(const BusMessage& msg, FileWriter& writer)
 {
 	// const auto& can_msg = static_cast<const CanMessage&>(msg);
 	writer.write_struct(msg);

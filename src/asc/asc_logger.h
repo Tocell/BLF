@@ -29,8 +29,6 @@ public:
 	// std::unique_ptr<BusMessage> read() override;
 	bool write(const BusMessage& msg) override;
 
-	void flush() override;
-
 	void set_compres_level(int32_t compres_level) override;
 
 private:

@@ -30,15 +30,11 @@ public:
 
 	[[nodiscard]] uint64_t get_file_size() const override;
 
-	void flush() override;
-
 	bool write(const BusMessage& msg) override;
 
 	void set_compres_level(int32_t compres_level) override;
 
 	void flush_logcontainer(LogContainer& log_container);
-
-	size_t calculate_size();
 
 private:
 	std::ofstream file_;

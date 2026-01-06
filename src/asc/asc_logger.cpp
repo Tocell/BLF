@@ -47,12 +47,6 @@ bool AscLogger::write(const BusMessage& msg)
 	return it->second->write(msg, file_writer_);
 }
 
-
-void AscLogger::flush()
-{
-
-}
-
 void AscLogger::register_writer()
 {
 	writer_[BusType::CAN] = std::make_unique<CanMessageAscWriter>();

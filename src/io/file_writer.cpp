@@ -48,12 +48,6 @@ bool FileWriter::write(const uint8_t* data, size_t size)
 	{
 		return false;
 	}
-	// std::cout << "write data:" << std::endl;
-	// for (auto i = 0; i < size; i++)
-	// {
-	// 	printf("%d ", data[i]);
-	// }
-	// std::cout << std::endl;
 	file_.write(reinterpret_cast<const char*>(data), static_cast<std::streamsize>(size));
 	if (file_.fail()) {
 		std::cerr << "File write format error." << std::endl;
@@ -61,12 +55,13 @@ bool FileWriter::write(const uint8_t* data, size_t size)
 	if (file_.bad()) {
 		std::cerr << "File write hardware error." << std::endl;
 	}
+
 	return file_.good();
 }
 
 void FileWriter::append(const uint8_t* data, size_t size)
 {
-	memcpy(buffer_, data, size);
+	memcpy(buffer_ + pos_, data, size);
 	pos_ += size;
 }
 

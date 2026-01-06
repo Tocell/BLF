@@ -26,12 +26,17 @@ bool BlfLogger::open(const std::string& filepath, int32_t mode, bool append)
 
 void BlfLogger::close()
 {
-	file_statistics_writer_.update_frame_count(frame_count_);
-	file_statistics_writer_.update_file_size(file_writer_.tell());
+	if (file_writer_.is_open())
+	{
+		std::cout << "BlfLogger::close file flush log container." << std::endl;
+		flush_logcontainer(log_container_writer_.get_logcontainer());
 
-	file_writer_.seek(0);
-	file_statistics_writer_.update_file_header(file_writer_);
-	file_writer_.close();
+		file_statistics_writer_.update_frame_count(frame_count_);
+		file_statistics_writer_.update_file_size(file_writer_.tell());
+		file_writer_.seek(0);
+		file_statistics_writer_.update_file_header(file_writer_);
+		file_writer_.close();
+	}
 }
 	// std::map<BusType, std::unique_ptr<IMessageWriter>> writer_;
 bool BlfLogger::write(const BusMessage& msg)
@@ -46,8 +51,6 @@ bool BlfLogger::write(const BusMessage& msg)
 	bool result;
 	if ((file_writer_.get_pos() + 400) >= BUFFER_MAX_SIZE)
 	{
-		log_container_writer_.set_buffer(file_writer_.get_buffer(), file_writer_.get_pos());
-		log_container_writer_.compress(compression_method_, compression_level_);
 		flush_logcontainer(log_container_writer_.get_logcontainer());
 	}
 
@@ -59,8 +62,14 @@ bool BlfLogger::write(const BusMessage& msg)
 
 void BlfLogger::flush_logcontainer(LogContainer& log_container)
 {
-	auto size = calculate_size() + static_cast<size_t>(log_container.compressed_file_size);
+	std::cout << "BlfLogger::flush_logcontainer into.." << std::endl;
+	log_container_writer_.set_buffer(file_writer_.get_buffer(), file_writer_.get_pos());
+	log_container_writer_.compress(compression_method_, compression_level_);
+
+	auto size = log_container_writer_.calculate_size() + static_cast<size_t>(log_container.compressed_file_size);
 	file_writer_.write(reinterpret_cast<uint8_t*>(&log_container), size);
+
+	file_writer_.set_pos(0);
 }
 
 bool BlfLogger::is_open() const
@@ -78,11 +87,6 @@ uint64_t BlfLogger::get_file_size() const
 	return 0;
 }
 
-void BlfLogger::flush()
-{
-
-}
-
 void BlfLogger::set_compres_level(int32_t compres_level)
 {
 	if (compres_level > compression_level_)
@@ -95,14 +99,6 @@ void BlfLogger::set_compres_level(int32_t compres_level)
 	}
 	compression_level_ = compres_level;
 	file_statistics_writer_.set_compres_level(compres_level);
-}
-
-size_t BlfLogger::calculate_size()
-{
-	return sizeof(ObjectHeaderBase) +
-		sizeof(uint16_t) + sizeof(uint16_t) +
-		sizeof(uint32_t) + sizeof(uint32_t) +
-		sizeof(uint32_t);
 }
 
 }

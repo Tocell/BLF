@@ -10,7 +10,7 @@ namespace BLF
 class CanMessageAscWriter : public IMessageWriter
 {
 public:
-	bool write(const BusMessage& msg, FileWriter& writer) const override;
+	bool write(const BusMessage& msg, FileWriter& writer) override;
 };
 
 }

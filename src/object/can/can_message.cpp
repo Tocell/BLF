@@ -7,9 +7,11 @@ namespace BLF
 {
 struct BLF_API CanMessage::Impl
 {
-	ObjectHeaderBase header_base_{};
-	ObjectHeader header_{};
+	// ObjectHeaderBase header_base_{};
+	// ObjectHeader header_{};
 	CanFrame frame_{};
+
+	uint64_t timestamp_{};
 };
 
 CanMessage::CanMessage(const CanFrame& frame_data)
@@ -27,12 +29,12 @@ BusType CanMessage::get_bus_type() const
 
 [[nodiscard]] uint64_t CanMessage::get_timestamp() const
 {
-	return impl->header_.object_timestamp;
+	return impl->timestamp_;
 }
 
 void CanMessage::set_timestamp(uint64_t timestamp)
 {
-	impl->header_.object_timestamp = timestamp;
+	impl->timestamp_ = timestamp;
 }
 
 BLF_API BusMessage* create_message(const CanFrame& frame)

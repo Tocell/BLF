@@ -24,8 +24,6 @@ public:
 
     [[nodiscard]] virtual uint64_t get_file_size() const = 0;
 
-    virtual void flush() = 0;
-
     virtual void set_compres_level(int32_t compres_level) = 0;
 
     virtual bool write(const BusMessage& msg) = 0;
