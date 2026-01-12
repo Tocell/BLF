@@ -103,7 +103,8 @@ make -j$(nproc)
     ```
     新版 Clion 需要手动指定 Conan 路径（如果未在 PATH 中）：
     ```cmake
-    -DCONAN_COMMAND=path/to/conan
+    -DCONAN_COMMAND=path/to/conan   
+    C:\Users\T\AppData\Roaming\Python\Python312\Scripts\conan.exe
     ```
 
 ---
