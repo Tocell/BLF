@@ -9,7 +9,7 @@ file(GLOB_RECURSE SOURCE
         ${CMAKE_SOURCE_DIR}/src/object/can_message/*.cpp
         ${CMAKE_SOURCE_DIR}/src/object/lin_message/*.cpp
         ${CMAKE_SOURCE_DIR}/src/object/flexray_message/*.cpp
-        ${CMAKE_SOURCE_DIR}/src/object/object_deader/*.cpp
+        ${CMAKE_SOURCE_DIR}/src/object/object_header/*.cpp
 )
 
 add_library(blf SHARED ${SOURCE})
