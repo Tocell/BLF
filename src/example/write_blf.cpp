@@ -30,12 +30,24 @@ int main()
 
 	logger->set_compres_level(6);
 
-
-
 	auto next = std::chrono::steady_clock::now();
 	constexpr auto period = std::chrono::microseconds(10);
 
-	for (int i = 0; i < 10000; i++)
+	std::atomic<bool> is_running{true};
+	std::atomic<int32_t> write_cnt{0};
+	std::thread tid = std::thread([&is_running, &logger, &write_cnt]()
+	{
+		auto next = std::chrono::steady_clock::now();
+		constexpr auto period = std::chrono::seconds(2);
+		while (is_running)
+		{
+			next += period;
+			printf("Write Frame %d Queue Count : %llu \n", write_cnt.load(), logger->get_message_count());
+			std::this_thread::sleep_until(next);
+		}
+	});
+
+	for (int i = 0; i < 100000000; i++)
 	{
 		next += period;
 
@@ -54,10 +66,14 @@ int main()
 		message->set_timestamp(time * 1000ULL);
 
 		logger->write(std::move(message));
+		write_cnt.fetch_add(1);
 
-		std::this_thread::sleep_until(next);
+		// std::this_thread::sleep_until(next);
 	}
 
+	is_running.store(false);
+	if (tid.joinable())
+		tid.join();
 	logger->close();
 	return 0;
 }

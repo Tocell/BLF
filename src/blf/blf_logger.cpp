@@ -25,7 +25,7 @@ bool BlfLogger::open(const std::string& filepath, int32_t mode, bool append)
 	is_running_.store(true);
 	writer_thread_ = std::thread([this]()
 	{
-		constexpr auto kWakeInterval = std::chrono::milliseconds(50);
+		constexpr auto kWakeInterval = std::chrono::microseconds(10);
 
 		while (is_running_.load())
 		{
@@ -69,6 +69,7 @@ bool BlfLogger::open(const std::string& filepath, int32_t mode, bool append)
 void BlfLogger::close()
 {
 	is_running_.store(false);
+	cv_.notify_all();
 	if (writer_thread_.joinable())
 	{
 		writer_thread_.join();
@@ -92,16 +93,20 @@ bool BlfLogger::write(BusMessagePtr msg)
 {
 	if (!msg) return false;
 
-	if (frame_count_.load() >= MAX_FRAME_CACHE_COUNT)
 	{
-		auto next = std::chrono::steady_clock::now();
-		constexpr auto period = std::chrono::microseconds(10);
-		next += period;
-		std::this_thread::sleep_until(next);
+		std::unique_lock lock(mutex_);
+		if (msg_queue_.size() >= MAX_FRAME_CACHE_COUNT)
+		{
+			auto next = std::chrono::steady_clock::now();
+			constexpr auto period = std::chrono::microseconds(10);
+			next += period;
+			std::this_thread::sleep_until(next);
+		}
 	}
 
 	std::unique_lock lock(mutex_);
 	msg_queue_.push(std::move(msg));
+	cv_.notify_one();
 
 	return true;
 }
@@ -150,7 +155,7 @@ bool BlfLogger::is_open() const
 
 uint64_t BlfLogger::get_message_count() const
 {
-	return 0;
+	return msg_queue_.size();
 }
 
 uint64_t BlfLogger::get_file_size() const
