@@ -4,7 +4,7 @@
 #include <iostream>
 
 #include "can_message.h"
-#include "blf_structure.h"
+#include "blf_object_header.h"
 
 namespace BLF
 {

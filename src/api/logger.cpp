@@ -1,8 +1,6 @@
 #include "logger.h"
 #include "logger_registry.h"
 
-#include <iostream>
-
 namespace BLF
 {
 

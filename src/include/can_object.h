@@ -18,7 +18,7 @@ struct CanFrame
 struct CanFrame2
 {
 	uint16_t channel;
-	uint8_t flags;       // CAN_MSG_DIR, RTR, etc.
+	uint8_t flags;
 	uint8_t dlc;
 	uint32_t id;
 	uint8_t data[8];

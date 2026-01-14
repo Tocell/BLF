@@ -1,9 +1,7 @@
 #ifndef FILE_STATISTICS_H
 #define FILE_STATISTICS_H
-#include "../api/imessage_writer.h"
-#include "../include/types.h"
 #include "../io/file_writer.h"
-#include "blf_structure.h"
+#include "blf_object_header.h"
 
 #include <chrono>
 #include <iostream>

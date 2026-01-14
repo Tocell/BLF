@@ -2,9 +2,13 @@
 #define BLF_OBJECT_HEADER_H
 
 #include <cstdint>
+#include <ios>
+#include "../include/can_object.h"
+
+namespace BLF
+{
 
 #define BL_OBJ_SIGNATURE                 0x4A424F4C       /* object signature */
-
 #define BL_FILE_SIGNATURE                0x47474F4C
 
 #define BL_OBJ_TYPE_UNKNOWN                       0       /* unknown object */
@@ -198,8 +202,10 @@
 #define BL_OBJ_TYPE_10BASET1S_STATUS            136   /* 10BaseT1S status object */
 #define BL_OBJ_TYPE_10BASET1S_STATISTIC         137   /* 10BaseT1S statistic object */
 
-#define BL_OBJ_FLAG_TIME_TEN_MICS     0x00000001 /* 10 micro second timestamp */
-#define BL_OBJ_FLAG_TIME_ONE_NANS     0x00000002 /* 1 nano second timestamp */
+#define BL_OBJ_FLAG_TIME_TEN_MICS				0x00000001 /* 10 micro second timestamp */
+#define BL_OBJ_FLAG_TIME_ONE_NANS				0x00000002 /* 1 nano second timestamp */
+
+#define BUFFER_MAX_SIZE							(4 * 1024 * 1024)
 
 #pragma pack(push, 1)
 struct ObjectHeaderBase {
@@ -239,9 +245,56 @@ struct SYSTEMTIME {
 	uint16_t second;
 	uint16_t milliseconds;
 };
+
+struct FileStatistics {
+	uint32_t signature;
+	uint32_t statistics_size;
+	uint32_t api_number;
+	uint8_t application_id;
+	uint8_t compression_level;
+	uint8_t application_major;
+	uint8_t application_minor;
+	uint64_t file_size;
+	uint64_t uncompressed_file_size;
+	uint32_t object_count;
+	uint32_t application_build;
+	SYSTEMTIME measurement_start_time;
+	SYSTEMTIME last_object_time;
+	uint64_t restore_points_offset;
+	uint32_t reserved_file_statistics[16];
+};
+
+struct LogContainer
+{
+	ObjectHeaderBase header_base{};
+	uint16_t compression_method {};
+	uint16_t reserved_log_container1 {};
+	uint32_t reserved_log_container2 {};
+	uint32_t uncompressed_file_size {};
+	uint32_t reserved_log_container3 {};
+	uint8_t compressed_file[BUFFER_MAX_SIZE] {};
+	uint8_t uncompressed_file[BUFFER_MAX_SIZE] {};
+	uint32_t compressed_file_size {};
+	std::streampos file_position {};
+};
+
+struct LogContainerDiskHeader
+{
+	ObjectHeaderBase base;
+	uint16_t compressionMethod;
+	uint16_t reserved1;
+	uint32_t reserved2;
+	uint32_t uncompressedSize;
+	uint32_t reserved3;
+};
+
 #pragma pack(pop)
 
 static_assert(sizeof(ObjectHeaderBase) == 16, "ObjectHeaderBase must be 16 bytes");
 static_assert(sizeof(ObjectHeader)     == 16, "ObjectHeader must be 16 bytes");
+static_assert(sizeof(LogContainerDiskHeader) == 32, "LogContainer header must be 32 bytes");
+static_assert(sizeof(ObjectHeaderBase) + sizeof(ObjectHeader) + sizeof(CanFrame) == 48);
+static_assert(sizeof(FileStatistics) == 144, "FileStatistics must be 144 bytes");
 
+}
 #endif //BLF_OBJECT_HEADER_H

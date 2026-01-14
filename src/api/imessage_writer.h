@@ -1,8 +1,6 @@
 #ifndef IMESSAGE_WRITER_H
 #define IMESSAGE_WRITER_H
 
-#include <iosfwd>
-
 #include "../include/types.h"
 #include "file_writer.h"
 

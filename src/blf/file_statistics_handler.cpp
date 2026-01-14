@@ -23,12 +23,9 @@ FileStatisticsHandler::FileStatisticsHandler()
 SYSTEMTIME posix_us_to_systemtime(uint64_t posix_us)
 {
 	SYSTEMTIME st{};
+	auto sec = (time_t)(posix_us / 1000000ULL);
+	auto ms = (uint32_t)((posix_us % 1000000ULL) / 1000ULL);
 
-	// 1) 拆分秒和毫秒
-	time_t sec = (time_t)(posix_us / 1000000ULL);
-	uint32_t ms = (uint32_t)((posix_us % 1000000ULL) / 1000ULL);
-
-	// 2) 转 tm（线程安全：优先用 gmtime_r/localtime_r；Windows 可用 gmtime_s/localtime_s）
 	std::tm tmv{};
 
 #if defined(_WIN32)
@@ -37,10 +34,9 @@ SYSTEMTIME posix_us_to_systemtime(uint64_t posix_us)
 	localtime_r(&sec, &tmv);
 #endif
 
-	// 3) 填 SYSTEMTIME
 	st.year         = (uint16_t)(tmv.tm_year + 1900);
 	st.month        = (uint16_t)(tmv.tm_mon + 1);
-	st.dayOfWeek    = (uint16_t)(tmv.tm_wday);     // 0=Sunday
+	st.day_of_week  = (uint16_t)(tmv.tm_wday);     // 0=Sunday
 	st.day          = (uint16_t)(tmv.tm_mday);
 	st.hour         = (uint16_t)(tmv.tm_hour);
 	st.minute       = (uint16_t)(tmv.tm_min);

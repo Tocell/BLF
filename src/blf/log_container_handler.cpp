@@ -1,7 +1,5 @@
 #include "log_container_handler.h"
 #include "zlib.h"
-#include <valarray>
-#include <iosfwd>
 #include <iostream>
 
 namespace BLF

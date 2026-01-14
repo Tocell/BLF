@@ -5,7 +5,7 @@
 #include <fstream>
 #include <cstdint>
 
-#include "../blf/blf_structure.h"
+#include "../blf/blf_object_header.h"
 
 namespace BLF
 {

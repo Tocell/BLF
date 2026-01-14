@@ -7,7 +7,6 @@
 #include "file_statistics_handler.h"
 #include "log_container_handler.h"
 
-#include <fstream>
 #include <map>
 
 namespace BLF
@@ -21,21 +20,13 @@ public:
 	~BlfLogger() override = default;
 
 	bool open(const std::string& filepath, int32_t mode, bool append) override;
-
 	void close() override;
-
 	[[nodiscard]] bool is_open() const override;
-
 	[[nodiscard]] uint64_t get_message_count() const override;
-
 	[[nodiscard]] uint64_t get_file_size() const override;
-
 	bool write(const BusMessage& msg) override;
-
 	void set_compres_level(int32_t compres_level) override;
-
 	void flush_logcontainer(LogContainer& log_container);
-
 	void set_timestamp_unit(int32_t unit) override;
 
 private:

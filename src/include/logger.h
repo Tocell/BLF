@@ -10,24 +10,25 @@ namespace BLF
 
 class BLF_API Logger {
 public:
+    // 创建记录对象
     static std::unique_ptr<Logger> create(FileFormat format);
 
     virtual ~Logger() = default;
 
+    // 打开文件
     virtual bool open(const std::string& filepath, int32_t mode, bool append) = 0;
-
+    // 关闭文件
     virtual void close() = 0;
-
+    // 检查打开状态
     [[nodiscard]] virtual bool is_open() const = 0;
-
+    // 获取消息数量
     [[nodiscard]] virtual uint64_t get_message_count() const = 0;
-
     [[nodiscard]] virtual uint64_t get_file_size() const = 0;
-
+    // 设置 blf 格式压缩级别，默认为 6
     virtual void set_compres_level(int32_t compres_level) = 0;
-
+    // 设置时间戳单位
     virtual void set_timestamp_unit(int32_t unit) = 0;
-
+    // 写入接口
     virtual bool write(const BusMessage& msg) = 0;
 };
 
