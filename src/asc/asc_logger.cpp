@@ -36,15 +36,16 @@ uint64_t AscLogger::get_file_size() const
 	return 0;
 }
 
-bool AscLogger::write(const BusMessage& msg)
+bool AscLogger::write(BusMessagePtr msg)
 {
-	const auto bus_type = msg.get_bus_type();
-	auto it = writer_.find(bus_type);
-	if (it == writer_.end())
-	{
-		return false;
-	}
-	return it->second->write(msg, file_writer_);
+	// const auto bus_type = msg.get_bus_type();
+	// auto it = writer_.find(bus_type);
+	// if (it == writer_.end())
+	// {
+	// 	return false;
+	// }
+	// return it->second->write(msg, file_writer_);
+	return true;
 }
 
 void AscLogger::register_writer()

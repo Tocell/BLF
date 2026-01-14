@@ -8,6 +8,13 @@
 #include "log_container_handler.h"
 
 #include <map>
+#include <thread>
+#include <mutex>
+#include <condition_variable>
+#include <atomic>
+#include <queue>
+
+#define MAX_FRAME_CACHE_COUNT (300 * 1000)
 
 namespace BLF
 {
@@ -24,7 +31,7 @@ public:
 	[[nodiscard]] bool is_open() const override;
 	[[nodiscard]] uint64_t get_message_count() const override;
 	[[nodiscard]] uint64_t get_file_size() const override;
-	bool write(const BusMessage& msg) override;
+	bool write(BusMessagePtr msg) override;
 	void set_compres_level(int32_t compres_level) override;
 	void flush_logcontainer(LogContainer& log_container);
 	void set_timestamp_unit(int32_t unit) override;
@@ -35,9 +42,16 @@ private:
 	FileStatisticsHandler file_statistics_writer_;
 	LogContainerHandler log_container_writer_;
 
-	int32_t frame_count_;	// 保存帧数量
+	std::atomic<int32_t> frame_count_;	// 保存帧数量
 	int32_t compression_method_;
 	int32_t compression_level_;
+
+	std::mutex mutex_;
+	std::condition_variable cv_;
+	std::thread writer_thread_;
+	std::atomic<bool> is_running_;
+
+	std::queue<BusMessagePtr> msg_queue_;
 };
 
 

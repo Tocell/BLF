@@ -27,7 +27,7 @@ public:
 	[[nodiscard]] uint64_t get_file_size() const override;
 
 	// std::unique_ptr<BusMessage> read() override;
-	bool write(const BusMessage& msg) override;
+	bool write(BusMessagePtr msg) override;
 
 	void set_compres_level(int32_t compres_level) override;
 

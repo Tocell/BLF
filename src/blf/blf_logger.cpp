@@ -21,14 +21,61 @@ bool BlfLogger::open(const std::string& filepath, int32_t mode, bool append)
 {
 	file_writer_.open(filepath, mode, append);
 	file_statistics_writer_.write_file_header(file_writer_);
+
+	is_running_.store(true);
+	writer_thread_ = std::thread([this]()
+	{
+		constexpr auto kWakeInterval = std::chrono::milliseconds(50);
+
+		while (is_running_.load())
+		{
+			BusMessagePtr msg;
+			std::queue<BusMessagePtr> msg_queue;
+			{
+				std::unique_lock lock(mutex_);
+				cv_.wait_for(lock, kWakeInterval, [this]()
+				{
+					return !msg_queue_.empty() || !is_running_.load();
+				});
+				if (!is_running_.load() && msg_queue_.empty())
+					break;
+				if (msg_queue_.empty()) continue;
+
+				msg_queue = std::move(msg_queue_);
+			}
+
+			while (!msg_queue.empty())
+			{
+				msg = std::move(msg_queue.front());
+				const auto bus_type = msg->get_bus_type();
+				auto it = writer_.find(bus_type);
+				if (it == writer_.end()) continue;
+
+				if ((file_writer_.get_pos() + 400) >= BUFFER_MAX_SIZE)
+				{
+					flush_logcontainer(log_container_writer_.get_logcontainer());
+				}
+
+				auto retult = it->second->write(*msg, file_writer_);
+				frame_count_.fetch_add(1);
+
+				msg_queue.pop();
+			}
+		}
+	});
 	return true;
 }
 
 void BlfLogger::close()
 {
+	is_running_.store(false);
+	if (writer_thread_.joinable())
+	{
+		writer_thread_.join();
+	}
+
 	if (file_writer_.is_open())
 	{
-		std::cout << "BlfLogger::close file flush log container." << std::endl;
 		flush_logcontainer(log_container_writer_.get_logcontainer());
 
 		file_statistics_writer_.update_frame_count(frame_count_);
@@ -37,27 +84,26 @@ void BlfLogger::close()
 		file_statistics_writer_.update_file_header(file_writer_);
 		file_writer_.close();
 	}
+
+	frame_count_.store(0);
 }
-	// std::map<BusType, std::unique_ptr<IMessageWriter>> writer_;
-bool BlfLogger::write(const BusMessage& msg)
+
+bool BlfLogger::write(BusMessagePtr msg)
 {
-	const auto bus_type = msg.get_bus_type();
-	auto it = writer_.find(bus_type);
-	if (it == writer_.end())
+	if (!msg) return false;
+
+	if (frame_count_.load() >= MAX_FRAME_CACHE_COUNT)
 	{
-		return false;
+		auto next = std::chrono::steady_clock::now();
+		constexpr auto period = std::chrono::microseconds(10);
+		next += period;
+		std::this_thread::sleep_until(next);
 	}
 
-	bool result;
-	if ((file_writer_.get_pos() + 400) >= BUFFER_MAX_SIZE)
-	{
-		flush_logcontainer(log_container_writer_.get_logcontainer());
-	}
+	std::unique_lock lock(mutex_);
+	msg_queue_.push(std::move(msg));
 
-	result = it->second->write(msg, file_writer_);
-	frame_count_++;
-
-	return result;
+	return true;
 }
 
 void BlfLogger::flush_logcontainer(LogContainer& log_container)
@@ -99,7 +145,7 @@ void BlfLogger::flush_logcontainer(LogContainer& log_container)
 
 bool BlfLogger::is_open() const
 {
-	return true;
+	return file_writer_.is_open();
 }
 
 uint64_t BlfLogger::get_message_count() const
@@ -114,13 +160,13 @@ uint64_t BlfLogger::get_file_size() const
 
 void BlfLogger::set_compres_level(int32_t compres_level)
 {
-	if (compres_level > compression_level_)
+	if (compres_level == 0)
 	{
-		compression_method_ = 2;
+		compression_method_ = 0;
 	}
 	else
 	{
-		compression_method_ = 0;
+		compression_method_ = 2;
 	}
 	compression_level_ = compres_level;
 	file_statistics_writer_.set_compres_level(compres_level);

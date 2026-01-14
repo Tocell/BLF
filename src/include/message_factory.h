@@ -12,11 +12,14 @@ namespace BLF {
 BLF_API void destroy_message(BusMessage* message);
 
 // 可选的辅助类，方便用户使用
+
 struct MessageDeleter {
-	void operator()(BusMessage* ptr) const {
+	void operator()(BusMessage* ptr) const noexcept
+	{
 		destroy_message(ptr);
 	}
 };
+
 
 using BusMessagePtr = std::unique_ptr<BusMessage, MessageDeleter>;
 

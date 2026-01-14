@@ -33,9 +33,9 @@ int main()
 
 
 	auto next = std::chrono::steady_clock::now();
-	constexpr auto period = std::chrono::milliseconds(1);
+	constexpr auto period = std::chrono::microseconds(10);
 
-	for (int i = 0; i < 1000; i++)
+	for (int i = 0; i < 10000; i++)
 	{
 		next += period;
 
@@ -53,7 +53,7 @@ int main()
 		auto time = posix_time_us_uint64();
 		message->set_timestamp(time * 1000ULL);
 
-		logger->write(*message);
+		logger->write(std::move(message));
 
 		std::this_thread::sleep_until(next);
 	}

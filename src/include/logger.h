@@ -4,6 +4,7 @@
 #include <string>
 
 #include "types.h"
+#include "message_factory.h"
 
 namespace BLF
 {
@@ -29,7 +30,7 @@ public:
     // 设置时间戳单位
     virtual void set_timestamp_unit(int32_t unit) = 0;
     // 写入接口
-    virtual bool write(const BusMessage& msg) = 0;
+    virtual bool write(BusMessagePtr msg) = 0;
 };
 
 }

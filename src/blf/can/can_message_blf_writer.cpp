@@ -41,7 +41,6 @@ bool CanMessageBlfWriter::write(const BusMessage& msg, FileWriter& writer)
 		header_.object_timestamp = delta_ns / 10000ULL; // 10us = 10000ns
 	}
 
-
 	writer.append(reinterpret_cast<const uint8_t*>(&header_base_), sizeof(ObjectHeaderBase));
 	writer.append(reinterpret_cast<const uint8_t*>(&header_), sizeof(ObjectHeader));
 	writer.append(reinterpret_cast<const uint8_t*>(&can_frame), sizeof(CanFrame));
