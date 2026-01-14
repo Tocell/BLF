@@ -39,7 +39,7 @@ struct FileStatistics {
     SYSTEMTIME measurement_start_time;
     SYSTEMTIME last_object_time;
     uint64_t restore_points_offset;
-    uint32_t reserved_file_statistics[32];
+    uint32_t reserved_file_statistics[16];
 };
 
 struct LogContainer
@@ -56,13 +56,21 @@ struct LogContainer
     std::streampos file_position {};
 };
 
-struct BlfCanMessage {
-    ObjectHeaderBase header_base;
-    ObjectHeader header;
-    CanFrame data;
+struct LogContainerDiskHeader
+{
+    ObjectHeaderBase base;
+    uint16_t compressionMethod;
+    uint16_t reserved1;
+    uint32_t reserved2;
+    uint32_t uncompressedSize;
+    uint32_t reserved3;
 };
 
 #pragma pack(pop)
+
+static_assert(sizeof(LogContainerDiskHeader) == 32, "LogContainer header must be 32 bytes");
+static_assert(sizeof(ObjectHeaderBase) + sizeof(ObjectHeader) + sizeof(CanFrame) == 48);
+static_assert(sizeof(FileStatistics) == 144, "FileStatistics must be 144 bytes");
 
 }
 

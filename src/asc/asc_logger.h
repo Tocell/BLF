@@ -31,6 +31,8 @@ public:
 
 	void set_compres_level(int32_t compres_level) override;
 
+	void set_timestamp_unit(int32_t unit) override;
+
 private:
 	void register_writer();
 

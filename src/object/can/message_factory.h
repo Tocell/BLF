@@ -10,8 +10,13 @@ namespace BLF {
 	// 工厂函数返回一个原始指针
 	BLF_API BusMessage* create_message(const CanFrame& frame);
 
+	BLF_API BusMessage* create_message(const CanFrame2& frame);
+
 	// 配套的销毁函数，也必须从 DLL 导出
-	BLF_API void destroy_message(BusMessage* message);
+	BLF_API inline void destroy_message(BusMessage* message)
+	{
+		delete message;
+	}
 
 	// 可选的辅助类，方便用户使用
 	struct MessageDeleter {

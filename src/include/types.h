@@ -25,12 +25,15 @@ enum class FileFormat {
 enum class BusType {
 	UNKNOWN = 0,
 	CAN,
+	CAN2,
 	CAN_FD,
 	LIN,
 	FLEXRAY,
-	ETHERNET,
-	LOG_CONTAINER
+	ETHERNET
 };
+
+#define TIME_TEN_MICS     0x00000001 /* 10 micro second timestamp */
+#define TIME_ONE_NANS     0x00000002 /* 1 nano second timestamp */
 
 
 class BLF_API BusMessage

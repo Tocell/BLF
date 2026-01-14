@@ -7,8 +7,6 @@ namespace BLF
 {
 struct BLF_API CanMessage::Impl
 {
-	// ObjectHeaderBase header_base_{};
-	// ObjectHeader header_{};
 	CanFrame frame_{};
 
 	uint64_t timestamp_{};
@@ -41,12 +39,6 @@ BLF_API BusMessage* create_message(const CanFrame& frame)
 {
 	// 使用 new，返回原始指针
 	return new CanMessage(frame);
-}
-
-BLF_API void BLF::destroy_message(BusMessage* message)
-{
-	// 在 DLL 内部 delete，保证分配和释放在同一个模块
-	delete message;
 }
 
 BLF_API const CanFrame& CanMessage::get_frame() const

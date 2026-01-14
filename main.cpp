@@ -6,6 +6,7 @@
 #include "src/object/can/message_factory.h"
 
 #include <chrono>
+#include <thread>
 
 inline uint64_t posix_time_us_uint64()
 {
@@ -16,7 +17,7 @@ inline uint64_t posix_time_us_uint64()
 int main()
 {
 	auto logger = BLF::Logger::create(BLF::FileFormat::BLF);
-	logger->open("test.blf", 0, true);
+	logger->open("test.blf", 0, false);
 	if (logger && logger->is_open())
 	{
 		std::cout << "file test.blf open successful." << std::endl;
@@ -29,23 +30,32 @@ int main()
 
 	logger->set_compres_level(6);
 
-	BLF::CanFrame can_frame{};
-	can_frame.channel = 1;
-	can_frame.flags = 0;
-	can_frame.dlc = 8;
-	can_frame.id = 0x123;
-	for (auto i = 0; i < can_frame.dlc; i++)
-	{
-		can_frame.data[i] = i;
-	}
 
-	BLF::BusMessagePtr message(BLF::create_message(can_frame));
+
+	auto next = std::chrono::steady_clock::now();
+	constexpr auto period = std::chrono::milliseconds(1);
 
 	for (int i = 0; i < 1000; i++)
 	{
-		// std::cout << "write : " << i << std::endl;
-		message->set_timestamp(posix_time_us_uint64());
+		next += period;
+
+		BLF::CanFrame can_frame{};
+		can_frame.channel = 1;
+		can_frame.flags = 1;
+		can_frame.dlc = 8;
+		can_frame.id = 0x123;
+		for (auto j = 0; j < can_frame.dlc; j++)
+		{
+			can_frame.data[j] = (j + 1) * i;
+		}
+		BLF::BusMessagePtr message(BLF::create_message(can_frame));
+
+		auto time = posix_time_us_uint64();
+		message->set_timestamp(time * 1000ULL);
+
 		logger->write(*message);
+
+		std::this_thread::sleep_until(next);
 	}
 
 	logger->close();

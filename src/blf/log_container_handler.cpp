@@ -9,11 +9,12 @@ namespace BLF
 
 LogContainerHandler::LogContainerHandler()
 {
-	log_container_.header_base.signature = BL_OBJ_SIGNATURE;
-	log_container_.header_base.header_size = sizeof(ObjectHeaderBase) + sizeof(ObjectHeader);
-	log_container_.header_base.header_version = 1;
-	log_container_.header_base.object_size = sizeof(ObjectHeaderBase) + log_container_.compressed_file_size;
-	log_container_.header_base.object_type = BL_OBJ_TYPE_LOG_CONTAINER;
+	log_container_.header_base.signature		= BL_OBJ_SIGNATURE;
+	log_container_.header_base.header_size		= sizeof(ObjectHeaderBase);
+	log_container_.header_base.header_version	= 1;
+	log_container_.header_base.object_type		= BL_OBJ_TYPE_LOG_CONTAINER;
+
+	log_container_.header_base.object_size		= 0;
 }
 
 size_t LogContainerHandler::calculate_size()
@@ -32,7 +33,7 @@ void LogContainerHandler::compress(uint16_t compression_method, int compression_
 	case 0:
 		memcpy(log_container_.compressed_file,
 			log_container_.uncompressed_file,
-			4 * 1024 * 1024);
+			log_container_.uncompressed_file_size);
 		log_container_.compressed_file_size = log_container_.uncompressed_file_size;
 		log_container_.header_base.object_size = calculate_size() + log_container_.compressed_file_size;
 
@@ -52,15 +53,8 @@ void LogContainerHandler::compress(uint16_t compression_method, int compression_
 			}
 			log_container_.compressed_file_size = static_cast<uint32_t>(compress_size);
 
-			if (log_container_.compressed_file_size % 4 != 0)
-			{
-				uint32_t padding = 4 - (log_container_.compressed_file_size % 4);
-				memset(log_container_.compressed_file + log_container_.compressed_file_size, 0, padding);
-				log_container_.compressed_file_size += padding;
-			}
-
-			log_container_.header_base.object_size = calculate_size() + log_container_.compressed_file_size;
-
+			log_container_.header_base.object_size = calculate_size() +
+				log_container_.compressed_file_size;
 			break;
 		}
 	default:
@@ -75,7 +69,7 @@ void LogContainerHandler::uncompress()
 	case 0:
 		memcpy(log_container_.uncompressed_file,
 			log_container_.compressed_file,
-			4 * 1024 * 1024);
+			log_container_.uncompressed_file_size);
 		break;
 	case 2:
 		{
@@ -102,6 +96,9 @@ LogContainer& LogContainerHandler::get_logcontainer()
 
 void LogContainerHandler::set_buffer(uint8_t* data, size_t size)
 {
+	if (size > BUFFER_MAX_SIZE) {
+		throw std::runtime_error("set_buffer: size exceeds BUFFER_MAX_SIZE");
+	}
 	log_container_.uncompressed_file_size = size;
 	memcpy(log_container_.uncompressed_file, data, size);
 }

@@ -62,12 +62,37 @@ bool BlfLogger::write(const BusMessage& msg)
 
 void BlfLogger::flush_logcontainer(LogContainer& log_container)
 {
-	std::cout << "BlfLogger::flush_logcontainer into.." << std::endl;
+	auto& lc = log_container_writer_.get_logcontainer();
+
 	log_container_writer_.set_buffer(file_writer_.get_buffer(), file_writer_.get_pos());
 	log_container_writer_.compress(compression_method_, compression_level_);
 
-	auto size = log_container_writer_.calculate_size() + static_cast<size_t>(log_container.compressed_file_size);
-	file_writer_.write(reinterpret_cast<uint8_t*>(&log_container), size);
+	LogContainerDiskHeader hdr{};
+	hdr.base.signature      = BL_OBJ_SIGNATURE;
+	hdr.base.header_size    = sizeof(ObjectHeaderBase);
+	hdr.base.header_version = 1;
+	hdr.base.object_type    = BL_OBJ_TYPE_LOG_CONTAINER;
+
+	hdr.compressionMethod = lc.compression_method;
+	hdr.reserved1         = 0;
+	hdr.reserved2         = 0;
+	hdr.uncompressedSize  = lc.uncompressed_file_size;
+	hdr.reserved3         = 0;
+
+
+	const uint32_t raw = lc.compressed_file_size;
+
+	hdr.base.object_size = static_cast<uint32_t>(sizeof(LogContainerDiskHeader) + raw);
+
+	file_writer_.write(reinterpret_cast<const uint8_t*>(&hdr), sizeof(hdr));
+	file_writer_.write(lc.compressed_file, raw);
+
+	const uint32_t pad = hdr.base.object_size % 4;
+	if (pad)
+	{
+		static const uint8_t zeros[3] = {0,0,0};
+		file_writer_.write(zeros, pad);
+	}
 
 	file_writer_.set_pos(0);
 }
@@ -99,6 +124,14 @@ void BlfLogger::set_compres_level(int32_t compres_level)
 	}
 	compression_level_ = compres_level;
 	file_statistics_writer_.set_compres_level(compres_level);
+}
+
+void BlfLogger::set_timestamp_unit(int32_t unit)
+{
+	for (auto& it : writer_)
+	{
+		it.second->set_timestamp_unit(unit);
+	}
 }
 
 }

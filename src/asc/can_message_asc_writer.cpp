@@ -12,4 +12,9 @@ bool CanMessageAscWriter::write(const BusMessage& msg, FileWriter& writer)
 	return true;
 }
 
+void CanMessageAscWriter::set_timestamp_unit(int32_t unit)
+{
+
+}
+
 }

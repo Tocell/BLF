@@ -10,7 +10,10 @@ namespace BLF
 class CanMessageAscWriter : public IMessageWriter
 {
 public:
+	~CanMessageAscWriter() override = default;
+	
 	bool write(const BusMessage& msg, FileWriter& writer) override;
+	void set_timestamp_unit(int32_t unit) override;
 };
 
 }

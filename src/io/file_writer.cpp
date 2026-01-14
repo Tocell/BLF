@@ -19,14 +19,21 @@ bool FileWriter::open(const std::string& filename, int32_t mode, bool append)
 {
 	close();
 	filename_ = filename;
-	auto fmode = mode | std::ios::out;
+	auto fmode = mode | std::ios::out | std::ios::binary;
 	if (append)
 	{
-		fmode |= std::ios::app;
+		fmode |= std::ios::in;
+	}
+	else
+	{
+		fmode |= std::ios::trunc;
 	}
 
 	file_.open(filename, fmode);
-	return file_.is_open();
+
+	if (append)
+		file_.seekp(0, std::ios::end);
+	return true;
 }
 
 void FileWriter::close()
@@ -61,6 +68,9 @@ bool FileWriter::write(const uint8_t* data, size_t size)
 
 void FileWriter::append(const uint8_t* data, size_t size)
 {
+	if (pos_ + size > BUFFER_MAX_SIZE) {
+		throw std::runtime_error("FileWriter::append overflow");
+	}
 	memcpy(buffer_ + pos_, data, size);
 	pos_ += size;
 }

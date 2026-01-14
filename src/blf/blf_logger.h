@@ -36,8 +36,9 @@ public:
 
 	void flush_logcontainer(LogContainer& log_container);
 
+	void set_timestamp_unit(int32_t unit) override;
+
 private:
-	std::ofstream file_;
 	std::map<BusType, std::unique_ptr<IMessageWriter>> writer_;
 	FileWriter file_writer_;
 	FileStatisticsHandler file_statistics_writer_;

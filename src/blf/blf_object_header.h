@@ -241,4 +241,7 @@ struct SYSTEMTIME {
 };
 #pragma pack(pop)
 
+static_assert(sizeof(ObjectHeaderBase) == 16, "ObjectHeaderBase must be 16 bytes");
+static_assert(sizeof(ObjectHeader)     == 16, "ObjectHeader must be 16 bytes");
+
 #endif //BLF_OBJECT_HEADER_H

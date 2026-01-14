@@ -57,4 +57,9 @@ void AscLogger::set_compres_level(int32_t compres_level)
 
 }
 
+void AscLogger::set_timestamp_unit(int32_t unit)
+{
+
+}
+
 }

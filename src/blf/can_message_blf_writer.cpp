@@ -1,8 +1,5 @@
 #include "can_message_blf_writer.h"
-
 #include "can_message.h"
-
-#include <iostream>
 
 namespace BLF
 {
@@ -23,6 +20,10 @@ CanMessageBlfWriter::CanMessageBlfWriter()
 	header_.time_flags = BL_OBJ_FLAG_TIME_ONE_NANS;
 }
 
+void CanMessageBlfWriter::set_timestamp_unit(int32_t unit)
+{
+	header_.time_flags = unit;
+}
 
 bool CanMessageBlfWriter::write(const BusMessage& msg, FileWriter& writer)
 {
@@ -30,12 +31,21 @@ bool CanMessageBlfWriter::write(const BusMessage& msg, FileWriter& writer)
 
 	const CanFrame& can_frame = can_msg.get_frame();
 
-	header_.object_timestamp = can_msg.get_timestamp() * 1000;
-	header_.object_timestamp = can_msg.get_timestamp();
+	if (BL_OBJ_FLAG_TIME_ONE_NANS == header_.time_flags)
+	{
+		header_.object_timestamp = can_msg.get_timestamp() - writer.get_file_start_time() * 1000ULL;
+	}
+	else if (BL_OBJ_FLAG_TIME_TEN_MICS == header_.time_flags)
+	{
+
+	}
+
+
 	writer.append(reinterpret_cast<const uint8_t*>(&header_base_), sizeof(ObjectHeaderBase));
 	writer.append(reinterpret_cast<const uint8_t*>(&header_), sizeof(ObjectHeader));
 	writer.append(reinterpret_cast<const uint8_t*>(&can_frame), sizeof(CanFrame));
 
 	return true;
 }
+
 }

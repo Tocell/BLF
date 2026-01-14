@@ -45,12 +45,24 @@ public:
 
 	uint8_t* get_buffer();
 
+	void set_file_start_time(uint64_t time)
+	{
+		file_start_time_ = time;
+	}
+
+	[[nodiscard]] uint64_t get_file_start_time() const
+	{
+		return file_start_time_;
+	}
+
 private:
 	std::ofstream file_{};
 	std::string filename_{};
 
 	uint8_t buffer_[BUFFER_MAX_SIZE]{};
 	uint64_t pos_;
+
+	uint64_t file_start_time_{};
 };
 
 }
