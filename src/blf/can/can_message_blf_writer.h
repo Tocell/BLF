@@ -1,7 +1,7 @@
 #ifndef CAN_MESSAGE_BLF_WRITER_H
 #define CAN_MESSAGE_BLF_WRITER_H
-#include "../api/imessage_writer.h"
-#include "../api/writer_registrar.h"
+#include "../../api/imessage_writer.h"
+#include "../../registry/writer_registrar.h"
 
 namespace BLF
 {

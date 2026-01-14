@@ -1,6 +1,6 @@
 #include "asc_logger.h"
 #include "can_message_asc_writer.h"
-#include "writer_registry.h"
+#include "../registry/writer_registry.h"
 
 namespace BLF
 {

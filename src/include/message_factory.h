@@ -1,8 +1,8 @@
 #ifndef MESSAGE_FACTORY_H
 #define MESSAGE_FACTORY_H
 
-#include "../../include/types.h"
-#include "../../include/can_object.h" // 假设 CanFrame 在这里
+#include "types.h"
+#include "can_object.h"
 #include <memory>
 #include <type_traits>
 

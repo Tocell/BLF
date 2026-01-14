@@ -1,7 +1,7 @@
 #include "can_message.h"
 #include "../../include/can_object.h"
 #include "../../blf/blf_object_header.h"
-#include "message_factory.h"
+#include "../../include/message_factory.h"
 
 namespace BLF
 {

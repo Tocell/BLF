@@ -3,7 +3,7 @@
 
 #include "../include/logger.h"
 #include "imessage_writer.h"
-#include "../api/logger_registrar.h"
+#include "../registry/logger_registrar.h"
 #include "file_statistics_handler.h"
 #include "log_container_handler.h"
 

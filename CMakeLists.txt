@@ -26,8 +26,8 @@ endforeach()
 
 add_subdirectory(src)
 
-add_executable(main main.cpp)
-target_link_libraries(main blf)
+add_executable(write_blf src/example/write_blf.cpp)
+target_link_libraries(write_blf blf)
 
 
 

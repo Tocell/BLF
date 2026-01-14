@@ -1,5 +1,5 @@
 #include "blf_logger.h"
-#include "can_message_blf_writer.h"
+#include "can/can_message_blf_writer.h"
 
 #include <iostream>
 

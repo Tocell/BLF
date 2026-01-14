@@ -5,7 +5,7 @@
 #include <map>
 #include <memory>
 
-#include "imessage_writer.h"
+#include "../api/imessage_writer.h"
 #include "../include/types.h"
 
 namespace BLF

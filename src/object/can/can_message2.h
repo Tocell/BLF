@@ -26,7 +26,7 @@ private:
 
 }
 
-#include "message_factory.h"
+#include "../../include/message_factory.h"
 namespace BLF
 {
 	template <>

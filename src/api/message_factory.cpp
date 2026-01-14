@@ -1,5 +1,5 @@
-#include "message_factory.h"
-#include "../../include/types.h"
+#include "../include/message_factory.h"
+#include "../include/types.h"
 
 namespace BLF
 {

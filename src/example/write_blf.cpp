@@ -1,9 +1,9 @@
 #include <iostream>
-#include "src/include/logger.h"
-#include "src/include/types.h"
-#include "src/include/can_object.h"
-#include "src/object/can/can_message.h"
-#include "src/object/can/message_factory.h"
+#include "../include/logger.h"
+#include "../include/types.h"
+#include "../include/can_object.h"
+#include "../object/can/can_message.h"
+#include "../include/message_factory.h"
 
 #include <chrono>
 #include <thread>

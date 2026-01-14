@@ -2,7 +2,7 @@
 #define CAN_MESSAGE_ASC_MESSAGE_H
 
 #include "../api/imessage_writer.h"
-#include "../api/writer_registrar.h"
+#include "../registry/writer_registrar.h"
 
 namespace BLF
 {
