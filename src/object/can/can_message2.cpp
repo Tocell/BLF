@@ -36,12 +36,6 @@ void CanMessage2::set_timestamp(uint64_t timestamp)
 	impl->timestamp_ = timestamp;
 }
 
-BLF_API BusMessage* create_message(const CanFrame2& frame)
-{
-	// 使用 new，返回原始指针
-	return new CanMessage2(frame);
-}
-
 BLF_API const CanFrame2& CanMessage2::get_frame() const
 {
 	return impl->frame_;

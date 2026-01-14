@@ -4,28 +4,38 @@
 #include "../../include/types.h"
 #include "../../include/can_object.h" // 假设 CanFrame 在这里
 #include <memory>
+#include <type_traits>
 
 namespace BLF {
 
-	// 工厂函数返回一个原始指针
-	BLF_API BusMessage* create_message(const CanFrame& frame);
+// 配套的销毁函数，也必须从 DLL 导出
+BLF_API void destroy_message(BusMessage* message);
 
-	BLF_API BusMessage* create_message(const CanFrame2& frame);
-
-	// 配套的销毁函数，也必须从 DLL 导出
-	BLF_API inline void destroy_message(BusMessage* message)
-	{
-		delete message;
+// 可选的辅助类，方便用户使用
+struct MessageDeleter {
+	void operator()(BusMessage* ptr) const {
+		destroy_message(ptr);
 	}
+};
 
-	// 可选的辅助类，方便用户使用
-	struct MessageDeleter {
-		void operator()(BusMessage* ptr) const {
-			destroy_message(ptr);
-		}
-	};
+using BusMessagePtr = std::unique_ptr<BusMessage, MessageDeleter>;
 
-	using BusMessagePtr = std::unique_ptr<BusMessage, MessageDeleter>;
+template <typename FrameT>
+struct MessageType;
+
+template <typename FrameT>
+BusMessage* create_message(const FrameT& frame)
+{
+	using MsgT = typename MessageType<FrameT>::type;
+	static_assert(std::is_base_of_v<BusMessage, MsgT>, "MessageType<FrameT>::type must derive from BusMessage");
+	return new MsgT(frame);
+}
+
+template <typename FrameT>
+BusMessagePtr make_message(const FrameT& frame)
+{
+	return BusMessagePtr(create_message(frame));
+}
 
 } // namespace BLF
 

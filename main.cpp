@@ -48,7 +48,7 @@ int main()
 		{
 			can_frame.data[j] = (j + 1) * i;
 		}
-		BLF::BusMessagePtr message(BLF::create_message(can_frame));
+		auto message = make_message(can_frame);
 
 		auto time = posix_time_us_uint64();
 		message->set_timestamp(time * 1000ULL);

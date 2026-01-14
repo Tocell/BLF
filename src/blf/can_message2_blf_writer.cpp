@@ -31,8 +31,16 @@ bool CanMessage2BlfWriter::write(const BusMessage& msg, FileWriter& writer)
 
 	const CanFrame2& can_frame = can_msg.get_frame();
 
-	header_.object_timestamp = can_msg.get_timestamp() - writer.get_file_start_time();
-	printf("object_timestamp: %llu start_time: %llu \n", header_.object_timestamp, writer.get_file_start_time());
+	if (BL_OBJ_FLAG_TIME_ONE_NANS == header_.time_flags)
+	{
+		header_.object_timestamp = can_msg.get_timestamp() - writer.get_file_start_time() * 1000ULL;
+	}
+	else if (BL_OBJ_FLAG_TIME_TEN_MICS == header_.time_flags)
+	{
+		uint64_t delta_ns = can_msg.get_timestamp() - writer.get_file_start_time() * 1000ULL;
+		header_.object_timestamp = delta_ns / 10000ULL; // 10us = 10000ns
+	}
+
 	writer.append(reinterpret_cast<const uint8_t*>(&header_base_), sizeof(ObjectHeaderBase));
 	writer.append(reinterpret_cast<const uint8_t*>(&header_), sizeof(ObjectHeader));
 	writer.append(reinterpret_cast<const uint8_t*>(&can_frame), sizeof(CanFrame2));

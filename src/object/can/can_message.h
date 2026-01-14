@@ -26,4 +26,14 @@ private:
 
 }
 
+#include "message_factory.h"
+namespace BLF
+{
+	template <>
+	struct MessageType<CanFrame>
+	{
+		using type = CanMessage;
+	};
+}
+
 #endif //CAN_MESSAGE_H

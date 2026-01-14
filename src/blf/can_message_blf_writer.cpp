@@ -37,7 +37,8 @@ bool CanMessageBlfWriter::write(const BusMessage& msg, FileWriter& writer)
 	}
 	else if (BL_OBJ_FLAG_TIME_TEN_MICS == header_.time_flags)
 	{
-
+		uint64_t delta_ns = can_msg.get_timestamp() - writer.get_file_start_time() * 1000ULL;
+		header_.object_timestamp = delta_ns / 10000ULL; // 10us = 10000ns
 	}
 
 
