@@ -29,6 +29,8 @@ add_subdirectory(src)
 add_executable(write_blf src/example/write_blf.cpp)
 target_link_libraries(write_blf blf)
 
+add_executable(parser src/example/parser.cpp)
+target_link_libraries(parser blf)
 
 
 # 强制设置安装路径为项目根目录下的 output

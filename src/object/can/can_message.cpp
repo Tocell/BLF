@@ -1,10 +1,14 @@
 #include "can_message.h"
+
+#include "reader_registrar.h"
 #include "../../include/can_object.h"
 #include "../../blf/blf_object_header.h"
 #include "../../include/message_factory.h"
+#include "../registry/reader_registrar.h"
 
 namespace BLF
 {
+
 struct BLF_API CanMessage::Impl
 {
 	CanFrame frame_{};

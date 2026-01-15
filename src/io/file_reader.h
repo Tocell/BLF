@@ -14,9 +14,7 @@ public:
 	~FileReader();
 
 	bool open(const std::string& file_name);
-
 	void close();
-
 	[[nodiscard]] bool is_open() const;
 
 	bool read(uint8_t* data, size_t size);
@@ -27,14 +25,15 @@ public:
 		return read(reinterpret_cast<uint8_t*>(&obj), sizeof(T));
 	}
 
+	bool skip(uint64_t n)
+	{
+		return seek(tell() + n);
+	}
+
 	uint64_t tell();
-
 	bool seek(uint64_t pos);
-
 	[[nodiscard]] uint64_t file_size() const;
-
 	[[nodiscard]] bool eof() const;
-
 
 private:
 	std::string filename_;

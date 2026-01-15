@@ -15,24 +15,13 @@ FileWriter::~FileWriter()
 	close();
 }
 
-bool FileWriter::open(const std::string& filename, int32_t mode, bool append)
+bool FileWriter::open(const std::string& filename)
 {
 	close();
+
 	filename_ = filename;
-	auto fmode = mode | std::ios::out | std::ios::binary;
-	if (append)
-	{
-		fmode |= std::ios::in;
-	}
-	else
-	{
-		fmode |= std::ios::trunc;
-	}
+	file_.open(filename, std::ios::out | std::ios::binary | std::ios::trunc);
 
-	file_.open(filename, fmode);
-
-	if (append)
-		file_.seekp(0, std::ios::end);
 	return true;
 }
 

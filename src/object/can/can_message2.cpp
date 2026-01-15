@@ -2,6 +2,7 @@
 #include "../../include/can_object.h"
 #include "../../blf/blf_object_header.h"
 #include "../../include/message_factory.h"
+#include "../registry/reader_registrar.h"
 
 namespace BLF
 {

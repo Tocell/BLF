@@ -1,10 +1,12 @@
 #include "can_message_blf_writer.h"
 #include "can_message.h"
+#include "reader_registrar.h"
 
 namespace BLF
 {
 
 static WriterRegistrar<CanMessageBlfWriter> registrar(FileFormat::BLF, BusType::CAN);
+
 
 CanMessageBlfWriter::CanMessageBlfWriter()
 {

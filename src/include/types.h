@@ -32,6 +32,11 @@ enum class BusType {
 	ETHERNET
 };
 
+enum class OpenMode {
+	Read,
+	Write
+};
+
 #define TIME_TEN_MICS     0x00000001 /* 10 micro second timestamp */
 #define TIME_ONE_NANS     0x00000002 /* 1 nano second timestamp */
 

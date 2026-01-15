@@ -6,6 +6,7 @@
 #include <cstdint>
 
 #include "../blf/blf_object_header.h"
+#include "types.h"
 
 namespace BLF
 {
@@ -16,7 +17,7 @@ public:
 	FileWriter();
 	~FileWriter();
 
-	bool open(const std::string& filename, int32_t mode, bool append = false);
+	bool open(const std::string& filename);
 
 	void close();
 

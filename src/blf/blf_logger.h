@@ -14,6 +14,8 @@
 #include <atomic>
 #include <queue>
 
+#include "file_reader.h"
+
 #define MAX_FRAME_CACHE_COUNT (300 * 1000)
 
 namespace BLF
@@ -26,7 +28,7 @@ public:
 
 	~BlfLogger() override = default;
 
-	bool open(const std::string& filepath, int32_t mode, bool append) override;
+	bool open(const std::string& filepath, OpenMode mode) override;
 	void close() override;
 	[[nodiscard]] bool is_open() const override;
 	[[nodiscard]] uint64_t get_message_count() const override;
@@ -36,22 +38,46 @@ public:
 	void flush_logcontainer(LogContainer& log_container);
 	void set_timestamp_unit(int32_t unit) override;
 
+	void read(BusMessagePtr& msg) override;
+
+	void get_measure_time(uint64_t& start_time, uint64_t& stop_time) override;
+
+	uint32_t align_pad_like_writer(uint32_t object_size);
+
+	void writer_thread_handler();
+
+	void read_logcontainer_thread_handler();
+
+	void read_busmsg_thread_handler();
+
 private:
 	std::map<BusType, std::unique_ptr<IMessageWriter>> writer_;
+	OpenMode mode_{};
 	FileWriter file_writer_;
+
+	FileReader file_reader_;
+	bool eof_{false};
+
 	FileStatisticsHandler file_statistics_writer_;
-	LogContainerHandler log_container_writer_;
+	LogContainerHandler log_container_;
 
 	std::atomic<int32_t> frame_count_;	// 保存帧数量
 	int32_t compression_method_;
 	int32_t compression_level_;
 
-	std::mutex mutex_;
-	std::condition_variable cv_;
+	std::mutex msg_mtx_;
+	std::condition_variable msg_cv_;
 	std::thread writer_thread_;
 	std::atomic<bool> is_running_;
 
+	std::thread read_logcontainer_thread_;
+	std::thread read_busmsg_thread_;
+
 	std::queue<BusMessagePtr> msg_queue_;
+
+	std::mutex log_mtx_;
+	std::condition_variable log_cv_;
+	std::queue<LogContainer> log_queue_;
 };
 
 

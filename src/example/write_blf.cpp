@@ -17,7 +17,7 @@ inline uint64_t posix_time_us_uint64()
 int main()
 {
 	auto logger = BLF::Logger::create(BLF::FileFormat::BLF);
-	logger->open("test.blf", 0, false);
+	logger->open("test.blf", BLF::OpenMode::Write);
 	if (logger && logger->is_open())
 	{
 		std::cout << "file test.blf open successful." << std::endl;
@@ -47,7 +47,7 @@ int main()
 		}
 	});
 
-	for (int i = 0; i < 100000000; i++)
+	for (int i = 0; i < 1000000; i++)
 	{
 		next += period;
 

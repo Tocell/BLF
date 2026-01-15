@@ -48,7 +48,10 @@ bool FileReader::read(uint8_t* data, size_t size)
 		return false;
 	}
 	file_.read(reinterpret_cast<char*>(data), static_cast<std::streamsize>(size));
-	return file_.good() || file_.eof();
+	const auto got = file_.gcount();
+	if (got != static_cast<std::streamsize>(size))
+		return false;
+	return true;
 }
 
 uint64_t FileReader::tell()
@@ -66,6 +69,7 @@ bool FileReader::seek(uint64_t pos)
 	{
 		return false;
 	}
+	file_.clear();
 	file_.seekg(static_cast<std::streamoff>(pos));
 	return file_.good();
 }
@@ -79,5 +83,6 @@ bool FileReader::eof() const
 {
 	return file_.eof();
 }
+
 
 }

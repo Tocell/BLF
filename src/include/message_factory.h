@@ -11,8 +11,6 @@ namespace BLF {
 // 配套的销毁函数，也必须从 DLL 导出
 BLF_API void destroy_message(BusMessage* message);
 
-// 可选的辅助类，方便用户使用
-
 struct MessageDeleter {
 	void operator()(BusMessage* ptr) const noexcept
 	{

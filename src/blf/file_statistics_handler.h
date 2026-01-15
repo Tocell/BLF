@@ -32,6 +32,10 @@ public:
 
 	void update_file_size(uint64_t file_size);
 
+	void get_measure_time(uint64_t& start_time, uint64_t& stop_time) const;
+
+	void update_file_statistics(const FileStatistics& file_statistics);
+
 private:
 	FileStatistics file_statistics_{};
 };

@@ -1,4 +1,6 @@
 #include "file_statistics_handler.h"
+#include <cstdint>
+#include <ctime>
 
 namespace BLF
 {
@@ -46,10 +48,31 @@ SYSTEMTIME posix_us_to_systemtime(uint64_t posix_us)
 	return st;
 }
 
+
+uint64_t systemtime_to_posix_us(const SYSTEMTIME& st)
+{
+	std::tm tmv{};
+	tmv.tm_year  = static_cast<int>(st.year) - 1900; // years since 1900
+	tmv.tm_mon   = static_cast<int>(st.month) - 1;   // 0-11
+	tmv.tm_mday  = static_cast<int>(st.day);         // 1-31
+	tmv.tm_hour  = static_cast<int>(st.hour);        // 0-23
+	tmv.tm_min   = static_cast<int>(st.minute);      // 0-59
+	tmv.tm_sec   = static_cast<int>(st.second);      // 0-60
+	tmv.tm_isdst = -1;                               // 让 mktime 自动处理 DST
+
+	const std::time_t sec = std::mktime(&tmv);       // 本地时间 -> epoch seconds
+	if (sec == static_cast<std::time_t>(-1)) {
+		return 0; // 或按你项目风格处理错误
+	}
+
+	return static_cast<uint64_t>(sec) * 1000000ULL +
+		   static_cast<uint64_t>(st.milliseconds) * 1000ULL;
+}
+
+
 bool FileStatisticsHandler::write_file_header(FileWriter& writer)
 {
 	auto now = get_posix_time_us_uint64();
-	printf("FileStatisticsHandler::write_file_header now time : %llu\n", now);
 	file_statistics_.measurement_start_time = posix_us_to_systemtime(now);
 	file_statistics_.last_object_time = posix_us_to_systemtime(now);
 	writer.set_file_start_time(now);
@@ -80,6 +103,17 @@ void FileStatisticsHandler::update_frame_count(int32_t frame_count)
 void FileStatisticsHandler::update_file_size(uint64_t file_size)
 {
 	file_statistics_.file_size = file_size;
+}
+
+void FileStatisticsHandler::get_measure_time(uint64_t& start_time, uint64_t& stop_time) const
+{
+	start_time = systemtime_to_posix_us(file_statistics_.measurement_start_time);
+	stop_time = systemtime_to_posix_us(file_statistics_.last_object_time);
+}
+
+void FileStatisticsHandler::update_file_statistics(const FileStatistics& file_statistics)
+{
+	file_statistics_ = file_statistics;
 }
 
 }

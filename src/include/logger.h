@@ -17,7 +17,7 @@ public:
     virtual ~Logger() = default;
 
     // 打开文件
-    virtual bool open(const std::string& filepath, int32_t mode, bool append) = 0;
+    virtual bool open(const std::string& filepath, OpenMode mode) = 0;
     // 关闭文件
     virtual void close() = 0;
     // 检查打开状态
@@ -31,6 +31,11 @@ public:
     virtual void set_timestamp_unit(int32_t unit) = 0;
     // 写入接口
     virtual bool write(BusMessagePtr msg) = 0;
+
+    // 读取数据
+    virtual void read(BusMessagePtr& msg) = 0;
+
+    virtual void get_measure_time(uint64_t& start_time, uint64_t& stop_time) = 0;
 };
 
 }
