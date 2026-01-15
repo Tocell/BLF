@@ -26,6 +26,31 @@ int main()
 	logger->get_measure_time(start_time, stop_time);
 	printf("File measure start_time: %llu  stop time: %llu\n", start_time, stop_time);
 
+	BLF::BusMessagePtr msg{};
+	while (true)
+	{
+		logger->read(msg);
+		if (msg == nullptr)
+		{
+			continue;
+		}
+
+		const auto type = msg->get_bus_type();
+		const auto ts   = msg->get_timestamp();
+		if (type == BLF::BusType::CAN)
+		{
+			auto* can = dynamic_cast<BLF::CanMessage*>(msg.get());
+			if (!can) continue;
+
+			const BLF::CanFrame& f = can->get_frame();
+			printf("[CAN] ts=%llu ch=%u id=0x%X dlc=%u data=",
+				   (unsigned long long)ts, f.channel, f.id, f.dlc);
+			for (int i = 0; i < f.dlc && i < 8; ++i)
+				printf("%02X ", f.data[i]);
+			printf("\n");
+		}
+	}
+
 	logger->close();
 	return 0;
 }

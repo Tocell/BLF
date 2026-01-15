@@ -13,6 +13,7 @@
 #include <condition_variable>
 #include <atomic>
 #include <queue>
+#include <vector>
 
 #include "file_reader.h"
 
@@ -51,6 +52,13 @@ public:
 	void read_busmsg_thread_handler();
 
 private:
+	struct LogContainerBlock {
+		uint16_t compression_method{};
+		uint32_t uncompressed_size{};
+		std::vector<uint8_t> uncompressed; // size == uncompressed_size
+	};
+
+private:
 	std::map<BusType, std::unique_ptr<IMessageWriter>> writer_;
 	OpenMode mode_{};
 	FileWriter file_writer_;
@@ -77,7 +85,7 @@ private:
 
 	std::mutex log_mtx_;
 	std::condition_variable log_cv_;
-	std::queue<LogContainer> log_queue_;
+	std::queue<LogContainerBlock> log_queue_;
 };
 
 

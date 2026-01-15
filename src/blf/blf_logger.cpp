@@ -9,6 +9,7 @@
 #include "../api/imessage_reader.h"
 #include "../registry/reader_registry.h"
 #include "../registry/reader_registrar.h"
+#include "zlib.h"
 
 namespace BLF
 {
@@ -37,238 +38,19 @@ bool BlfLogger::open(const std::string& filepath, OpenMode mode)
 	{
 		file_reader_.open(filepath);
 		FileStatistics file_stats{};
-		file_reader_.read_struct(file_stats);
+		if (!file_reader_.read_struct(file_stats))
+		{
+			return false;
+		}
+
 		file_statistics_writer_.update_file_statistics(file_stats);
 
 		is_running_.store(true);
-		read_logcontainer_thread_ = std::thread([this]()
-		{
-			constexpr auto kWakeInterval = std::chrono::microseconds(100);
-			while (is_running_.load())
-			{
-				if (!file_reader_.is_open())
-					break;
-				{
-					std::unique_lock lock(log_mtx_);
-					log_cv_.wait_for(lock, kWakeInterval, [this]()
-					{
-						return (log_queue_.size() < 3) || !is_running_.load();
-					});
-					if (!is_running_.load())
-						break;
-					if (log_queue_.size() >= 3)
-						continue;
-				}
+		read_logcontainer_thread_ =
+			std::thread(&BlfLogger::read_logcontainer_thread_handler, this);
 
-				ObjectHeaderBase base{};
-				if (!file_reader_.read_struct(base))
-				{
-					is_running_.store(false);
-					log_cv_.notify_all();
-					msg_cv_.notify_all();
-					break;
-				}
-				if (base.signature != BL_OBJ_SIGNATURE || base.object_size < sizeof(ObjectHeader))
-				{
-					continue;
-				}
-
-				if (base.object_type != BL_OBJ_TYPE_LOG_CONTAINER)
-				{
-					const uint32_t remain = base.object_size - static_cast<uint32_t>(sizeof(ObjectHeaderBase));
-
-					if (remain && !file_reader_.skip(remain))
-					{
-						is_running_.store(false);
-						log_cv_.notify_all();
-						msg_cv_.notify_all();
-						break;
-					}
-
-					const uint32_t pad = align_pad_like_writer(base.object_size);
-					if (pad && !file_reader_.skip(pad))
-					{
-						is_running_.store(false);
-						log_cv_.notify_all();
-						msg_cv_.notify_all();
-						break;
-					}
-					continue;
-				}
-
-				LogContainerDiskHeader hdr{};
-				hdr.base = base;
-				const size_t rest = sizeof(LogContainerDiskHeader) - sizeof(ObjectHeaderBase);
-				if (rest)
-				{
-					if (!file_reader_.read(reinterpret_cast<uint8_t*>(&hdr) + sizeof(ObjectHeaderBase), rest))
-					{
-						is_running_.store(false);
-						log_cv_.notify_all();
-						msg_cv_.notify_all();
-						break;
-					}
-				}
-				if (hdr.base.object_size < sizeof(LogContainerDiskHeader))
-					continue;
-
-				const uint32_t raw = hdr.base.object_size - static_cast<uint32_t>(sizeof(LogContainerDiskHeader));
-
-				auto& lc = log_container_.get_logcontainer();
-				lc.compression_method     = hdr.compressionMethod;
-				lc.uncompressed_file_size = hdr.uncompressedSize;
-				lc.compressed_file_size   = raw;
-
-				if (raw > 0)
-				{
-					if (!file_reader_.read(lc.compressed_file, raw))
-					{
-						is_running_.store(false);
-						log_cv_.notify_all();
-						msg_cv_.notify_all();
-						break;
-					}
-				}
-
-				// padding
-				const uint32_t pad = align_pad_like_writer(hdr.base.object_size);
-				if (pad && !file_reader_.skip(pad))
-				{
-					is_running_.store(false);
-					log_cv_.notify_all();
-					msg_cv_.notify_all();
-					break;
-				}
-
-				// 解压
-				log_container_.uncompress();
-				if (lc.uncompressed_file == nullptr || lc.uncompressed_file_size == 0)
-					continue;
-
-				// push log_queue_
-				{
-					std::lock_guard lk(log_mtx_);
-					log_queue_.push(std::move(lc));
-				}
-				log_cv_.notify_one();
-			}
-		});
-
-		read_busmsg_thread_ = std::thread([this]()
-		{
-#if 0
-			constexpr auto kWakeInterval = std::chrono::microseconds(100);
-
-		    // 缓存：object_type -> reader
-		    std::unordered_map<uint32_t, std::unique_ptr<IMessageReader>> reader_cache;
-
-		    while (is_running_.load() || !log_queue_.empty())
-		    {
-		        LogContainer lc;
-		        {
-		            std::unique_lock lk(log_mtx_);
-		            log_cv_.wait_for(lk, kWakeInterval, [this]()
-		            {
-		                return !log_queue_.empty() || !is_running_.load();
-		            });
-
-		            if (log_queue_.empty())
-		            {
-		                if (!is_running_.load())
-		                    break;
-		                continue;
-		            }
-
-		            lc = std::move(log_queue_.front());
-		            log_queue_.pop();
-		        }
-		        log_cv_.notify_one(); // 释放 producer（log_queue_ 变小了）
-
-		        if (lc.uncompressed_file == nullptr || lc.uncompressed_file_size == 0)
-		            continue;
-
-		        const uint8_t* buf = lc.uncompressed_file;
-		        const uint64_t len = lc.uncompressed_file_size;
-
-		        uint64_t off = 0;
-		        while (off + sizeof(ObjectHeaderBase) <= len)
-		        {
-		            ObjectHeaderBase base{};
-		            std::memcpy(&base, buf + off, sizeof(ObjectHeaderBase));
-
-		            // 基本校验
-		            if (base.signature != BL_OBJ_SIGNATURE ||
-		                base.object_size < sizeof(ObjectHeaderBase) ||
-		                off + base.object_size > len)
-		            {
-		                // 当前 logcontainer 内部流错位/损坏：放弃这个 container
-		                break;
-		            }
-
-		            const uint8_t* obj_begin = buf + off;
-		            const uint32_t obj_size  = base.object_size;
-
-		            const uint8_t* payload   = obj_begin + sizeof(ObjectHeaderBase);
-		            const uint32_t payload_sz = obj_size - static_cast<uint32_t>(sizeof(ObjectHeaderBase));
-
-		            // 从注册表取 reader（带缓存）
-		            IMessageReader* reader = nullptr;
-		            {
-		                auto it = reader_cache.find(base.object_type);
-		                if (it == reader_cache.end())
-		                {
-		                    auto created = ReaderRegistry::instance().create(base.object_type);
-		                    if (created)
-		                    {
-		                        reader = created.get();
-		                        reader_cache.emplace(base.object_type, std::move(created));
-		                    }
-		                }
-		                else
-		                {
-		                    reader = it->second.get();
-		                }
-		            }
-
-		            if (reader)
-		            {
-		                BusMessagePtr msg(nullptr);
-		                const bool ok = decode_with_reader(*reader, base, obj_begin, obj_size, payload, payload_sz, msg);
-
-		                if (ok && msg)
-		                {
-		                    // 入队 msg_queue_
-		                    // 注意：如果你的主线程 pop 后不会 notify，这里不要用 cv 等待满队列，简单 sleep 限流最稳
-		                    for (;;)
-		                    {
-		                        {
-		                            std::unique_lock qlk(msg_mtx_);
-		                            if (msg_queue_.size() < MAX_FRAME_CACHE_COUNT)
-		                            {
-		                                msg_queue_.push(std::move(msg));
-		                                break;
-		                            }
-		                        }
-		                        std::this_thread::sleep_for(std::chrono::microseconds(10));
-		                    }
-		                    msg_cv_.notify_one();
-		                }
-		            }
-
-		            // 下一个对象（含 padding）
-		            off += obj_size;
-		            const uint32_t pad = align_pad_like_writer(obj_size);
-		            if (pad)
-		            {
-		                if (off + pad > len) break;
-		                off += pad;
-		            }
-		        }
-		    }
-
-
-#endif
-		});
+		read_busmsg_thread_
+			= std::thread(&BlfLogger::read_busmsg_thread_handler, this);
 	}
 	return true;
 }
@@ -282,22 +64,31 @@ void BlfLogger::close()
 		writer_thread_.join();
 	}
 
-	if (file_writer_.is_open())
-	{
-		flush_logcontainer(log_container_.get_logcontainer());
+	if (read_logcontainer_thread_.joinable())
+		read_logcontainer_thread_.join();
 
-		file_statistics_writer_.update_frame_count(frame_count_);
-		file_statistics_writer_.update_file_size(file_writer_.tell());
-		file_writer_.seek(0);
-		file_statistics_writer_.update_file_header(file_writer_);
-		file_writer_.close();
-	}
-	if (file_reader_.is_open())
-	{
-		file_reader_.close();
-	}
+	if (read_busmsg_thread_.joinable())
+		read_busmsg_thread_.join();
 
-	frame_count_.store(0);
+	if (OpenMode::Write == mode_)
+	{
+		if (file_writer_.is_open())
+		{
+			flush_logcontainer(log_container_.get_logcontainer());
+
+			file_statistics_writer_.update_frame_count(frame_count_);
+			file_statistics_writer_.update_file_size(file_writer_.tell());
+			file_writer_.seek(0);
+			file_statistics_writer_.update_file_header(file_writer_);
+			file_writer_.close();
+		}
+		if (file_reader_.is_open())
+		{
+			file_reader_.close();
+		}
+
+		frame_count_.store(0);
+	}
 }
 
 bool BlfLogger::write(BusMessagePtr msg)
@@ -416,15 +207,15 @@ void BlfLogger::set_timestamp_unit(int32_t unit)
 
 void BlfLogger::read(BusMessagePtr& msg)
 {
-	if (!msg_queue_.empty())
-	{
-		msg = std::move(msg_queue_.front());
-		msg_queue_.pop();
-	}
-	else
+	std::lock_guard<std::mutex> lock(msg_mtx_);
+	if (msg_queue_.empty())
 	{
 		msg = nullptr;
+		return;
 	}
+
+	msg = std::move(msg_queue_.front());
+	msg_queue_.pop();
 }
 
 void BlfLogger::get_measure_time(uint64_t& start_time, uint64_t& stop_time)
@@ -434,7 +225,7 @@ void BlfLogger::get_measure_time(uint64_t& start_time, uint64_t& stop_time)
 
 uint32_t BlfLogger::align_pad_like_writer(uint32_t object_size)
 {
-	return (4u - (object_size % 4)) % 4u;
+	return object_size % 4u;
 }
 
 void BlfLogger::writer_thread_handler()
@@ -477,5 +268,200 @@ void BlfLogger::writer_thread_handler()
 		}
 	}
 }
+
+void BlfLogger::read_logcontainer_thread_handler()
+{
+    constexpr auto kWakeInterval = std::chrono::microseconds(100);
+
+    while (is_running_.load())
+    {
+        ObjectHeaderBase base{};
+        if (!file_reader_.read_struct(base))
+        {
+            is_running_.store(false);
+            log_cv_.notify_all();
+            msg_cv_.notify_all();
+            break;
+        }
+
+        if (base.signature != BL_OBJ_SIGNATURE ||
+            base.object_size < sizeof(ObjectHeaderBase))
+        {
+            continue;
+        }
+
+        // 非 LogContainer：跳过
+        if (base.object_type != BL_OBJ_TYPE_LOG_CONTAINER)
+        {
+            const uint32_t skip = base.object_size - sizeof(ObjectHeaderBase);
+            file_reader_.skip(skip);
+            file_reader_.skip(align_pad_like_writer(base.object_size));
+            continue;
+        }
+
+        LogContainerDiskHeader hdr{};
+        hdr.base = base;
+
+        const size_t rest =
+            sizeof(LogContainerDiskHeader) - sizeof(ObjectHeaderBase);
+
+        if (rest &&
+            !file_reader_.read(reinterpret_cast<uint8_t*>(&hdr) +
+                               sizeof(ObjectHeaderBase),
+                               rest))
+        {
+            break;
+        }
+
+        const uint32_t raw =
+            hdr.base.object_size - sizeof(LogContainerDiskHeader);
+
+        std::vector<uint8_t> compressed(raw);
+        if (raw && !file_reader_.read(compressed.data(), raw))
+            break;
+
+        file_reader_.skip(align_pad_like_writer(hdr.base.object_size));
+
+        LogContainerBlock block{};
+        block.compression_method = hdr.compressionMethod;
+        block.uncompressed_size  = hdr.uncompressedSize;
+        block.uncompressed.resize(block.uncompressed_size);
+
+        // 解压
+        if (block.compression_method == 0)
+        {
+            memcpy(block.uncompressed.data(),
+                   compressed.data(),
+                   block.uncompressed_size);
+        }
+        else if (block.compression_method == 2)
+        {
+            uLong size = block.uncompressed_size;
+            if (::uncompress(block.uncompressed.data(),
+                             &size,
+                             compressed.data(),
+                             raw) != Z_OK ||
+                size != block.uncompressed_size)
+            {
+                continue;
+            }
+        }
+        else
+        {
+            continue;
+        }
+
+        {
+            std::lock_guard lk(log_mtx_);
+            log_queue_.push(std::move(block));
+        }
+        log_cv_.notify_one();
+    }
+}
+
+void BlfLogger::read_busmsg_thread_handler()
+{
+    constexpr auto kWakeInterval = std::chrono::microseconds(100);
+
+    std::unordered_map<uint32_t, std::unique_ptr<IMessageReader>> reader_cache;
+
+    uint64_t file_start_us = 0, file_stop_us = 0;
+    file_statistics_writer_.get_measure_time(file_start_us, file_stop_us);
+    const uint64_t start_ns = file_start_us * 1000ULL;
+
+    while (is_running_.load() || !log_queue_.empty())
+    {
+        LogContainerBlock block;
+
+        {
+            std::unique_lock lk(log_mtx_);
+            log_cv_.wait_for(lk, kWakeInterval, [&] {
+                return !log_queue_.empty() || !is_running_.load();
+            });
+
+            if (log_queue_.empty())
+            {
+                if (!is_running_.load())
+                    break;
+                continue;
+            }
+
+            block = std::move(log_queue_.front());
+            log_queue_.pop();
+        }
+
+        const uint8_t* buf = block.uncompressed.data();
+        size_t len = block.uncompressed.size();
+        size_t off = 0;
+
+        while (off + sizeof(ObjectHeaderBase) <= len)
+        {
+            ObjectHeaderBase base{};
+            memcpy(&base, buf + off, sizeof(base));
+
+            if (base.signature != BL_OBJ_SIGNATURE ||
+                off + base.object_size > len)
+            {
+                ++off;   // resync
+                continue;
+            }
+
+            IMessageReader* reader = nullptr;
+            auto it = reader_cache.find(base.object_type);
+            if (it == reader_cache.end())
+            {
+                auto created =
+                    ReaderRegistry::instance().create(base.object_type);
+                if (created)
+                {
+                    reader = created.get();
+                    reader_cache.emplace(base.object_type,
+                                         std::move(created));
+                }
+            }
+            else
+            {
+                reader = it->second.get();
+            }
+
+            if (reader)
+            {
+                BusMessagePtr msg =
+                    reader->read(buf + off, base.object_size);
+
+                if (msg)
+                {
+                    // ===== 时间戳还原（核心）=====
+                    if (base.header_version == 1 &&
+                        base.header_size >= sizeof(ObjectHeaderBase) +
+                                             sizeof(ObjectHeader))
+                    {
+                        ObjectHeader hdr{};
+                        memcpy(&hdr,
+                               buf + off + sizeof(ObjectHeaderBase),
+                               sizeof(hdr));
+
+                        uint64_t delta_ns =
+                            (hdr.time_flags == BL_OBJ_FLAG_TIME_TEN_MICS)
+                                ? hdr.object_timestamp * 10000ULL
+                                : hdr.object_timestamp;
+
+                        msg->set_timestamp(start_ns + delta_ns);
+                    }
+
+                    {
+                        std::lock_guard qlk(msg_mtx_);
+                        msg_queue_.push(std::move(msg));
+                    }
+                    msg_cv_.notify_one();
+                }
+            }
+
+            off += base.object_size;
+        }
+    }
+}
+
+
 
 }
