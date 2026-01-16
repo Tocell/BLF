@@ -205,17 +205,20 @@ void BlfLogger::set_timestamp_unit(int32_t unit)
 	}
 }
 
-void BlfLogger::read(BusMessagePtr& msg)
+bool BlfLogger::read(BusMessagePtr& msg)
 {
-	std::lock_guard<std::mutex> lock(msg_mtx_);
-	if (msg_queue_.empty())
+	std::unique_lock lock(msg_mtx_);
+	msg_cv_.wait(lock, [&]{
+		return !msg_queue_.empty() || decode_done_.load();
+	});
+	if (!msg_queue_.empty())
 	{
-		msg = nullptr;
-		return;
+		msg = std::move(msg_queue_.front());
+		msg_queue_.pop();
+		return true;
 	}
-
-	msg = std::move(msg_queue_.front());
-	msg_queue_.pop();
+	msg.reset();
+	return false;
 }
 
 void BlfLogger::get_measure_time(uint64_t& start_time, uint64_t& stop_time)
@@ -275,13 +278,25 @@ void BlfLogger::read_logcontainer_thread_handler()
 
     while (is_running_.load())
     {
+    	{
+    		std::unique_lock lock(log_mtx_);
+    		log_cv_.wait_for(lock, kWakeInterval, [this]()
+    		{
+    			return log_queue_.size() < 3;
+    		});
+    		if (!is_running_.load() || file_eof_.load()) break;
+    		if (log_queue_.size() >= 3) continue;
+    	}
         ObjectHeaderBase base{};
         if (!file_reader_.read_struct(base))
         {
-            is_running_.store(false);
-            log_cv_.notify_all();
-            msg_cv_.notify_all();
-            break;
+        	if (file_reader_.eof() || file_reader_.has_error())
+        	{
+        		file_eof_.store(true);
+        		log_cv_.notify_all();
+        		break;
+        	}
+        	continue;
         }
 
         if (base.signature != BL_OBJ_SIGNATURE ||
@@ -310,7 +325,12 @@ void BlfLogger::read_logcontainer_thread_handler()
                                sizeof(ObjectHeaderBase),
                                rest))
         {
-            break;
+        	if (file_reader_.eof() || file_reader_.has_error())
+        	{
+        		file_eof_.store(true);
+        		break;
+        	}
+        	continue;
         }
 
         const uint32_t raw =
@@ -318,7 +338,14 @@ void BlfLogger::read_logcontainer_thread_handler()
 
         std::vector<uint8_t> compressed(raw);
         if (raw && !file_reader_.read(compressed.data(), raw))
-            break;
+        {
+	        if (file_reader_.eof() || file_reader_.has_error())
+	        {
+	        	file_eof_.store(true);
+	        	break;
+	        }
+        	continue;
+        }
 
         file_reader_.skip(align_pad_like_writer(hdr.base.object_size));
 
@@ -346,10 +373,6 @@ void BlfLogger::read_logcontainer_thread_handler()
                 continue;
             }
         }
-        else
-        {
-            continue;
-        }
 
         {
             std::lock_guard lk(log_mtx_);
@@ -369,25 +392,32 @@ void BlfLogger::read_busmsg_thread_handler()
     file_statistics_writer_.get_measure_time(file_start_us, file_stop_us);
     const uint64_t start_ns = file_start_us * 1000ULL;
 
-    while (is_running_.load() || !log_queue_.empty())
+    while (is_running_.load())
     {
         LogContainerBlock block;
 
         {
-            std::unique_lock lk(log_mtx_);
-            log_cv_.wait_for(lk, kWakeInterval, [&] {
-                return !log_queue_.empty() || !is_running_.load();
+            std::unique_lock lk(msg_mtx_);
+            msg_cv_.wait_for(lk, kWakeInterval, [&] {
+                return !log_queue_.empty() || file_eof_.load() || !is_running_.load();
             });
 
             if (log_queue_.empty())
             {
                 if (!is_running_.load())
                     break;
+            	if (log_queue_.empty() && file_eof_.load())
+            	{
+            		decode_done_.store(true);
+            		msg_cv_.notify_all();
+            		break;
+            	}
                 continue;
             }
 
             block = std::move(log_queue_.front());
             log_queue_.pop();
+        	log_cv_.notify_one();
         }
 
         const uint8_t* buf = block.uncompressed.data();
@@ -461,7 +491,6 @@ void BlfLogger::read_busmsg_thread_handler()
         }
     }
 }
-
 
 
 }

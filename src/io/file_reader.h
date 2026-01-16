@@ -34,6 +34,7 @@ public:
 	bool seek(uint64_t pos);
 	[[nodiscard]] uint64_t file_size() const;
 	[[nodiscard]] bool eof() const;
+	bool has_error() const;
 
 private:
 	std::string filename_;

@@ -44,14 +44,10 @@ bool FileReader::is_open() const
 bool FileReader::read(uint8_t* data, size_t size)
 {
 	if (!file_.is_open() || !data || 0 == size)
-	{
 		return false;
-	}
+
 	file_.read(reinterpret_cast<char*>(data), static_cast<std::streamsize>(size));
-	const auto got = file_.gcount();
-	if (got != static_cast<std::streamsize>(size))
-		return false;
-	return true;
+	return file_.good() && file_.gcount() == static_cast<std::streamsize>(size);
 }
 
 uint64_t FileReader::tell()
@@ -82,6 +78,11 @@ uint64_t FileReader::file_size() const
 bool FileReader::eof() const
 {
 	return file_.eof();
+}
+
+bool FileReader::has_error() const
+{
+	return file_.bad();
 }
 
 

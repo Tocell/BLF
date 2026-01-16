@@ -29,7 +29,10 @@ add_subdirectory(src)
 add_executable(write_blf src/example/write_blf.cpp)
 target_link_libraries(write_blf blf)
 
-add_executable(parser src/example/parser.cpp)
+add_executable(write_asc src/example/write_asc.cpp)
+target_link_libraries(write_asc blf)
+
+add_executable(parser src/example/parser_blf.cpp)
 target_link_libraries(parser blf)
 
 

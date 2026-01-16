@@ -8,6 +8,7 @@ file(GLOB SOURCE
         ${CMAKE_CURRENT_SOURCE_DIR}/blf/can/*.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/io/*.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/asc/*.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/asc/can/*.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/object/can/*.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/registry/*.cpp
 )

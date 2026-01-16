@@ -15,7 +15,7 @@ std::map<BusType, std::unique_ptr<IMessageWriter>> WriterRegistry::create_writer
 	{
 		for (const auto& pair : registry_.at(format))
 		{
-			writers[pair.first] = pair.second();
+			writers[pair.first] = pair.second();  // 调用了 WriterFactory（）
 		}
 	}
 	return writers;

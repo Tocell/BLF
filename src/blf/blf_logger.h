@@ -34,12 +34,14 @@ public:
 	[[nodiscard]] bool is_open() const override;
 	[[nodiscard]] uint64_t get_message_count() const override;
 	[[nodiscard]] uint64_t get_file_size() const override;
+
 	bool write(BusMessagePtr msg) override;
-	void set_compres_level(int32_t compres_level) override;
 	void flush_logcontainer(LogContainer& log_container);
+
+	void set_compres_level(int32_t compres_level) override;
 	void set_timestamp_unit(int32_t unit) override;
 
-	void read(BusMessagePtr& msg) override;
+	bool read(BusMessagePtr& msg) override;
 
 	void get_measure_time(uint64_t& start_time, uint64_t& stop_time) override;
 
@@ -64,7 +66,6 @@ private:
 	FileWriter file_writer_;
 
 	FileReader file_reader_;
-	bool eof_{false};
 
 	FileStatisticsHandler file_statistics_writer_;
 	LogContainerHandler log_container_;
@@ -80,6 +81,9 @@ private:
 
 	std::thread read_logcontainer_thread_;
 	std::thread read_busmsg_thread_;
+
+	std::atomic<bool> file_eof_{false};
+	std::atomic<bool> decode_done_{false};
 
 	std::queue<BusMessagePtr> msg_queue_;
 
