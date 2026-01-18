@@ -19,6 +19,8 @@ public:
 
 	bool read(uint8_t* data, size_t size);
 
+	bool read_line(std::string& line);
+
 	template<typename T>
 	bool read_struct(T& obj)
 	{

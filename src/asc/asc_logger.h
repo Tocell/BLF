@@ -5,7 +5,6 @@
 #include "../api/imessage_writer.h"
 #include "../registry/logger_registrar.h"
 
-#include <fstream>
 #include <map>
 #include <thread>
 #include <mutex>
@@ -41,7 +40,11 @@ public:
 
 	void writer_header();
 
+	void read_header();
+
 	void writer_thread_handler();
+
+	void reader_thread_handler();
 
 private:
 	std::map<BusType, std::unique_ptr<IMessageWriter>> writer_;
@@ -61,6 +64,10 @@ private:
 	std::atomic<bool> is_running_;
 
 	std::atomic<int32_t> frame_count_;
+
+	std::thread read_thread_;
+
+	std::atomic<bool> file_eof_{false};
 };
 
 static LoggerRegistrar<AscLogger> registrar(FileFormat::ASC);

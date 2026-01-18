@@ -7,6 +7,8 @@
 #include <sstream>
 #include <string>
 
+#include "../asc_object_type_manager.h"
+
 namespace BLF
 {
 
@@ -15,7 +17,7 @@ static WriterRegistrar<CanMessageAscWriter> registrar(FileFormat::ASC, BusType::
 CanMessageAscWriter::CanMessageAscWriter():
 	timestamp_unit_(0)
 {
-
+	AscObjectTypeManager::register_type_manager("d", BL_OBJ_TYPE_CAN_MESSAGE);
 }
 
 void CanMessageAscWriter::set_timestamp_unit(int32_t unit)
@@ -43,7 +45,7 @@ static inline std::string build_canframe_asc_line(
 	const CanFrame& f,
 	uint64_t msg_timestamp_us,      // 绝对时间戳(us)
 	uint64_t file_start_time_us,    // 文件起始时间戳(us)，用于输出相对秒
-	bool timestamps_absolute = false // false: 相对文件起始；true: 直接输出 epoch 秒（一般不建议）
+	bool timestamps_absolute // false: 相对文件起始；true: 直接输出 epoch 秒（一般不建议）
 )
 {
 	// ASC <Time> 单位：秒（浮点小数）
@@ -104,7 +106,6 @@ bool CanMessageAscWriter::write(const BusMessage& msg, FileWriter& writer)
 		writer.get_file_start_time(),
 		false);
 
-	// writer.append(reinterpret_cast<const uint8_t*>(&line_msg), line_msg.size());
 	writer.append(reinterpret_cast<const uint8_t*>(line_msg.data()), line_msg.size());
 
 	return true;

@@ -50,6 +50,28 @@ bool FileReader::read(uint8_t* data, size_t size)
 	return file_.good() && file_.gcount() == static_cast<std::streamsize>(size);
 }
 
+bool FileReader::read_line(std::string& line)
+{
+	line.clear();
+	if (!file_.is_open())
+		return false;
+
+	// 使用 std::getline 读取到 '\n' 为止（getline 会去掉 '\n'）
+	if (!std::getline(file_, line))
+	{
+		// 失败：可能是 EOF 且没有读到任何字符，或者真的出错
+		return false;
+	}
+
+	// 如果是 CRLF，getline 会保留 '\r'，这里去掉
+	if (!line.empty() && line.back() == '\r')
+	{
+		line.pop_back();
+	}
+
+	return true;
+}
+
 uint64_t FileReader::tell()
 {
 	if (!file_.is_open())

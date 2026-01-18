@@ -48,7 +48,7 @@ int main()
 	});
 
 	uint32_t id = 0x123;
-	for (int i = 0; i < 100000000; i++)
+	for (int i = 0; i < 10000; i++)
 	{
 		next += period;
 
@@ -68,8 +68,6 @@ int main()
 
 		logger->write(std::move(message));
 		write_cnt.fetch_add(1);
-
-		// std::this_thread::sleep_until(next);
 	}
 
 	is_running.store(false);

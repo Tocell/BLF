@@ -9,10 +9,7 @@ namespace BLF
 
 static ReaderRegistrar<CanMessageBlfReader> registrar(BL_OBJ_TYPE_CAN_MESSAGE);
 
-CanMessageBlfReader::CanMessageBlfReader()
-{
-
-}
+CanMessageBlfReader::CanMessageBlfReader() = default;
 
 BusMessagePtr CanMessageBlfReader::read(const uint8_t* obj_begin, size_t obj_size)
 {

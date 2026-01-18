@@ -32,8 +32,11 @@ target_link_libraries(write_blf blf)
 add_executable(write_asc src/example/write_asc.cpp)
 target_link_libraries(write_asc blf)
 
-add_executable(parser src/example/parser_blf.cpp)
-target_link_libraries(parser blf)
+add_executable(parser_blf src/example/parser_blf.cpp)
+target_link_libraries(parser_blf blf)
+
+add_executable(parser_asc src/example/parser_asc.cpp)
+target_link_libraries(parser_asc blf)
 
 
 # 强制设置安装路径为项目根目录下的 output

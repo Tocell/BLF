@@ -11,7 +11,7 @@ template<typename T_Reader>
 class ReaderRegistrar
 {
 public:
-	ReaderRegistrar(uint32_t object_type)
+	explicit ReaderRegistrar(uint32_t object_type)
 	{
 		ReaderRegistry::instance().register_reader(object_type, []()
 		{

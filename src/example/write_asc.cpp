@@ -62,7 +62,7 @@ int main()
 		auto message = make_message(can_frame);
 
 		auto time = posix_time_us_uint64();
-		message->set_timestamp(time * 1000ULL);
+		message->set_timestamp(time);
 
 		logger->write(std::move(message));
 		write_cnt.fetch_add(1);

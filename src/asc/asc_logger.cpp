@@ -1,10 +1,15 @@
 #include "asc_logger.h"
-#include "can/can_message_asc_writer.h"
+#include "can_writer/can_message_asc_writer.h"
 #include "../registry/writer_registry.h"
+#include "../api/imessage_reader.h"
 #include <chrono>
 #include <ctime>
 #include <iomanip>
 #include <sstream>
+
+#include "asc_object_type_manager.h"
+#include "../api/iasc_message_reader.h"
+#include "../registry/asc_reader_registrar.h"
 
 namespace BLF
 {
@@ -35,12 +40,24 @@ bool AscLogger::open(const std::string& filepath, OpenMode mode)
 	else
 	{
 		file_reader_.open(filepath);
+		read_header();
+
+		is_running_.store(true);
+		read_thread_ =
+			std::thread(&AscLogger::reader_thread_handler, this);
 	}
 	return true;
 }
 
 void AscLogger::close()
 {
+	is_running_.store(false);
+	msg_cv_.notify_all();
+	if (writer_thread_.joinable())
+		writer_thread_.join();
+	if (read_thread_.joinable())
+		read_thread_.join();
+
 	if (OpenMode::Write == mode_)
 	{
 		is_running_.store(false);
@@ -115,12 +132,24 @@ void AscLogger::set_timestamp_unit(int32_t unit)
 
 void AscLogger::get_measure_time(uint64_t& start_time, uint64_t& stop_time)
 {
-
+	start_time = start_measure_time_;
+	stop_time = stop_measure_time_;
 }
 
 bool AscLogger::read(BusMessagePtr& msg)
 {
-	return true;
+	std::unique_lock lock(msg_mtx_);
+	msg_cv_.wait(lock, [&]{
+		return !msg_queue_.empty();
+	});
+	if (!msg_queue_.empty())
+	{
+		msg = std::move(msg_queue_.front());
+		msg_queue_.pop();
+		return true;
+	}
+	msg.reset();
+	return false;
 }
 
 void AscLogger::writer_header()
@@ -176,6 +205,179 @@ void AscLogger::writer_header()
 	file_writer_.flush();
 }
 
+static inline void trim_cr(std::string& s)
+{
+    if (!s.empty() && s.back() == '\r') s.pop_back();
+}
+
+static inline std::vector<std::string> split_ws(const std::string& s)
+{
+    std::vector<std::string> out;
+    std::string cur;
+    for (unsigned char ch : s)
+    {
+        if (std::isspace(ch))
+        {
+            if (!cur.empty()) { out.push_back(cur); cur.clear(); }
+        }
+        else cur.push_back(static_cast<char>(ch));
+    }
+    if (!cur.empty()) out.push_back(cur);
+    return out;
+}
+
+static inline int month_to_index(const std::string& m)
+{
+    // English + German month abbreviations from the spec examples
+    static const std::unordered_map<std::string, int> kMap = {
+        {"Jan",0},{"Feb",1},{"Mar",2},{"Apr",3},{"May",4},{"Jun",5},{"Jul",6},{"Aug",7},{"Sep",8},{"Oct",9},{"Nov",10},{"Dec",11},
+        {"Mär",2},{"Mai",4},{"Okt",9},{"Dez",11}
+    };
+    auto it = kMap.find(m);
+    return (it == kMap.end()) ? -1 : it->second;
+}
+
+static inline bool parse_time_hms_ms(const std::string& s, int& hh, int& mm, int& ss, int& msec)
+{
+    // supports: "09:21:13.159" or "09:21:13"
+    hh = mm = ss = 0; msec = 0;
+    const auto dot = s.find('.');
+    const std::string hms = (dot == std::string::npos) ? s : s.substr(0, dot);
+    const std::string ms  = (dot == std::string::npos) ? "" : s.substr(dot + 1);
+
+    if (std::sscanf(hms.c_str(), "%d:%d:%d", &hh, &mm, &ss) != 3) return false;
+
+    if (!ms.empty())
+    {
+        // 只取前三位毫秒（"159" -> 159；"1" -> 100；"12" -> 120 这种也兼容）
+        int v = std::atoi(ms.c_str());
+        if (ms.size() == 1) v *= 100;
+        else if (ms.size() == 2) v *= 10;
+        msec = v % 1000;
+    }
+    return true;
+}
+
+// 解析形如：date Wed Apr 16 09:21:13.159 am 2014
+// 或德文：date Die Dez 21 11:29:01 2004
+static inline bool parse_asc_date_line_to_posix_us(const std::string& line, uint64_t& out_posix_us)
+{
+    auto parts = split_ws(line);
+    if (parts.size() < 5) return false;
+    if (parts[0] != "date") return false;
+
+    // parts: ["date", WeekDay, Month, Date, Fulltime, (am/pm)?, Year]
+    const std::string& month_str = parts[2];
+    const int mon = month_to_index(month_str);
+    if (mon < 0) return false;
+
+    const int day = std::atoi(parts[3].c_str());
+
+    int hh=0, mm=0, ss=0, msec=0;
+    if (!parse_time_hms_ms(parts[4], hh, mm, ss, msec)) return false;
+
+    std::string ampm;
+    int year_idx = 5;
+    if (parts.size() >= 7 && (parts[5] == "am" || parts[5] == "pm"))
+    {
+        ampm = parts[5];
+        year_idx = 6;
+
+        // 转 24 小时
+        if (ampm == "pm" && hh < 12) hh += 12;
+        if (ampm == "am" && hh == 12) hh = 0;
+    }
+
+    if (year_idx >= (int)parts.size()) return false;
+    const int year = std::atoi(parts[year_idx].c_str());
+
+    std::tm tm{};
+    tm.tm_year = year - 1900;
+    tm.tm_mon  = mon;
+    tm.tm_mday = day;
+    tm.tm_hour = hh;
+    tm.tm_min  = mm;
+    tm.tm_sec  = ss;
+    tm.tm_isdst = -1; // 让 mktime 自己判定夏令时
+
+    const std::time_t t = std::mktime(&tm); // 本地时区
+    if (t == (std::time_t)-1) return false;
+
+    out_posix_us = static_cast<uint64_t>(t) * 1000000ULL + static_cast<uint64_t>(msec) * 1000ULL;
+    return true;
+}
+
+static inline bool is_asc_comment_line(const std::string& s)
+{
+	size_t i = 0;
+	while (i < s.size() && std::isspace(static_cast<unsigned char>(s[i]))) ++i;
+	return (i + 1 < s.size() && s[i] == '/' && s[i + 1] == '/');
+}
+
+	// 可选：解析 version 注释
+static inline bool parse_asc_version_comment(const std::string& s, int& major, int& minor, int& patch)
+{
+	// 形如: "// version 7.0.0"
+	// 简单做法：找 "version" 后的三段数字
+	const auto pos = s.find("version");
+	if (pos == std::string::npos) return false;
+
+	// 从 "version" 后面开始找数字
+	const char* p = s.c_str() + pos;
+	while (*p && !std::isdigit(static_cast<unsigned char>(*p))) ++p;
+	if (!*p) return false;
+
+	int a=0,b=0,c=0;
+	if (std::sscanf(p, "%d.%d.%d", &a, &b, &c) == 3)
+	{
+		major = a; minor = b; patch = c;
+		return true;
+	}
+	return false;
+}
+
+void AscLogger::read_header()
+{
+	if (!file_reader_.is_open())
+		return;
+
+	std::string line1, line2, line3;
+
+	if (!file_reader_.read_line(line1)) return;
+	if (!file_reader_.read_line(line2)) return;
+	if (!file_reader_.read_line(line3)) return;
+
+	trim_cr(line1);
+	trim_cr(line2);
+	trim_cr(line3);
+
+	// 解析 date 行 -> POSIX us
+	uint64_t start_us = 0;
+	if (!parse_asc_date_line_to_posix_us(line1, start_us))
+		// 如果格式不符合预期，你可以选择抛异常/记录日志/或置 0
+		start_measure_time_ = 0;
+	else
+		start_measure_time_ = start_us;
+
+	while (true)
+	{
+		const uint64_t pos_before = file_reader_.tell();
+
+		std::string line;
+		if (!file_reader_.read_line(line))
+		{
+			break;
+		}
+		trim_cr(line);
+
+		if (!is_asc_comment_line(line))
+		{
+			file_reader_.seek(pos_before);
+			break;
+		}
+	}
+}
+
 
 void AscLogger::writer_thread_handler()
 {
@@ -220,5 +422,50 @@ void AscLogger::writer_thread_handler()
 	}
 }
 
+void AscLogger::reader_thread_handler()
+{
+	std::string line;
+	constexpr auto kWakeInterval = std::chrono::microseconds(100);
+
+	std::vector<std::unique_ptr<IAscMessageReader>> asc_reader_cache;
+
+	while (is_running_.load())
+	{
+		{
+			std::unique_lock lock(msg_mtx_);
+			msg_cv_.wait_for(lock, kWakeInterval, [this]()
+			{
+				return msg_queue_.size() < 300 * 1000;
+			});
+			if (!is_running_.load() || file_eof_.load()) break;
+			if (msg_queue_.size() >= 300 * 1000) continue;
+		}
+		if (!file_reader_.read_line(line))
+		{
+			if (file_reader_.eof() || file_reader_.has_error())
+			{
+				file_eof_.store(true);
+				msg_cv_.notify_all();
+				break;
+			}
+			continue;
+		}
+
+		if (line.empty() || is_asc_comment_line(line)) continue;
+
+		IAscMessageReader* reader =
+			AscReaderRegistry::instance().pick_reader(line, asc_reader_cache);
+
+		if (!reader) continue;
+
+		BusMessagePtr msg = reader->read_line(line, start_measure_time_);
+		if (!msg) continue;
+		{
+			std::lock_guard qlk(msg_mtx_);
+			msg_queue_.push(std::move(msg));
+		}
+		msg_cv_.notify_one();
+	}
+}
 
 }

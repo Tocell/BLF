@@ -5,10 +5,12 @@ file(GLOB SOURCE
         ${CMAKE_CURRENT_SOURCE_DIR}/*.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/api/*.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/blf/*.cpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/blf/can/*.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/blf/can_writer/*.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/blf/can_reader/*.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/io/*.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/asc/*.cpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/asc/can/*.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/asc/can_writer/*.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/asc/can_reader/*.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/object/can/*.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/registry/*.cpp
 )
@@ -22,10 +24,13 @@ target_link_libraries(blf PRIVATE
 target_include_directories(blf PRIVATE
         ${CMAKE_CURRENT_SOURCE_DIR}/include
         ${CMAKE_CURRENT_SOURCE_DIR}/blf
-        ${CMAKE_CURRENT_SOURCE_DIR}/blf/can
+        ${CMAKE_CURRENT_SOURCE_DIR}/blf/can_writer
+        ${CMAKE_CURRENT_SOURCE_DIR}/blf/can_reader
         ${CMAKE_CURRENT_SOURCE_DIR}/api
         ${CMAKE_CURRENT_SOURCE_DIR}/io
         ${CMAKE_CURRENT_SOURCE_DIR}/asc
+        ${CMAKE_CURRENT_SOURCE_DIR}/asc/can_writer
+        ${CMAKE_CURRENT_SOURCE_DIR}/asc/can_reader
         ${CMAKE_CURRENT_SOURCE_DIR}/object/can
         ${CMAKE_CURRENT_SOURCE_DIR}/registry
 )
