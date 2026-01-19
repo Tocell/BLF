@@ -19,7 +19,8 @@ BlfLogger::BlfLogger()
 	compression_method_(0),
 	compression_level_(0)
 {
-	writer_ = WriterRegistry::get_instance().create_writers(FileFormat::BLF);
+	// writer_ = WriterRegistry::get_instance().create_writers(FileFormat::BLF);
+	writer_.reserve(200);
 }
 
 bool BlfLogger::open(const std::string& filepath, OpenMode mode)
@@ -256,15 +257,23 @@ void BlfLogger::writer_thread_handler()
 		{
 			msg = std::move(msg_queue.front());
 			const auto bus_type = msg->get_bus_type();
-			auto it = writer_.find(bus_type);
-			if (it == writer_.end()) continue;
+			// auto it = writer_.find(bus_type);
+			// if (it == writer_.end()) continue;
+			auto* w = create_writer(bus_type);
+			if (!w)
+			{
+				msg_queue.pop();
+				continue;
+			}
 
 			if ((file_writer_.get_pos() + 400) >= BUFFER_MAX_SIZE)
 			{
 				flush_logcontainer(log_container_.get_logcontainer());
 			}
 
-			auto retult = it->second->write(*msg, file_writer_);
+			// auto retult = it->second->write(*msg, file_writer_);
+			auto result = w->write(*msg, file_writer_);
+			(void)result;
 			frame_count_.fetch_add(1);
 
 			msg_queue.pop();
@@ -441,7 +450,7 @@ void BlfLogger::read_busmsg_thread_handler()
             if (it == reader_cache.end())
             {
                 auto created =
-                    ReaderRegistry::instance().create(base.object_type);
+                    ReaderRegistry::instance().find_reader(base.object_type);
                 if (created)
                 {
                     reader = created.get();
@@ -491,6 +500,23 @@ void BlfLogger::read_busmsg_thread_handler()
         }
     }
 }
+
+IMessageWriter* BlfLogger::create_writer(BusType bus_type)
+{
+	// 先查 cache
+	if (auto it = writer_.find(bus_type); it != writer_.end())
+		return it->second.get();
+
+	// 再从 registry 查 factory
+	const auto* fac = WriterRegistry::get_instance().find_writer(FileFormat::BLF, bus_type);
+	if (!fac) return nullptr;
+
+	auto obj = (*fac)();               // create
+	auto* p = obj.get();
+	writer_.emplace(bus_type, std::move(obj));
+	return p;
+}
+
 
 
 }

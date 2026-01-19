@@ -25,7 +25,7 @@ public:
         registry_[key] = std::move(f);
     }
 
-    IAscMessageReader* create(
+    IAscMessageReader* find_reader(
         uint32_t key,
         std::unordered_map<uint32_t, std::unique_ptr<IAscMessageReader>>& cache) const
     {

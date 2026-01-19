@@ -61,7 +61,10 @@ private:
 	};
 
 private:
-	std::map<BusType, std::unique_ptr<IMessageWriter>> writer_;
+	// std::map<BusType, std::unique_ptr<IMessageWriter>> writer_;
+	std::unordered_map<BusType, std::unique_ptr<IMessageWriter>> writer_;
+	IMessageWriter* create_writer(BusType bus_type);
+
 	OpenMode mode_{};
 	FileWriter file_writer_;
 

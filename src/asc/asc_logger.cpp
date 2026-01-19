@@ -22,7 +22,8 @@ inline uint64_t get_posix_time_us_uint64()
 AscLogger::AscLogger():
 	frame_count_(0)
 {
-	writer_ = WriterRegistry::get_instance().create_writers(FileFormat::ASC);
+	// writer_ = WriterRegistry::get_instance().create_writers(FileFormat::ASC);
+	writer_.reserve(200);
 }
 
 bool AscLogger::open(const std::string& filepath, OpenMode mode)
@@ -403,16 +404,30 @@ void AscLogger::writer_thread_handler()
 		{
 			msg = std::move(msg_queue.front());
 			const auto bus_type = msg->get_bus_type();
-			auto it = writer_.find(bus_type);
-			if (it == writer_.end()) continue;
+			// auto it = writer_.find(bus_type);
+			// if (it == writer_.end()) continue;
+			auto* w = create_writer(bus_type);
+			if (!w)
+			{
+				msg_queue.pop();
+				continue;
+			}
+
+			// if ((file_writer_.get_pos() + 400) >= BUFFER_MAX_SIZE)
+			// {
+			// 	file_writer_.write(file_writer_.get_buffer(), file_writer_.get_pos());
+			// 	file_writer_.set_pos(0);
+			// }
+			//
+			// auto result = it->second->write(*msg, file_writer_);
 
 			if ((file_writer_.get_pos() + 400) >= BUFFER_MAX_SIZE)
 			{
 				file_writer_.write(file_writer_.get_buffer(), file_writer_.get_pos());
 				file_writer_.set_pos(0);
 			}
-
-			auto result = it->second->write(*msg, file_writer_);
+			auto result = w->write(*msg, file_writer_);
+			(void)result;
 
 			frame_count_.fetch_add(1);
 
@@ -507,7 +522,7 @@ void AscLogger::reader_thread_handler()
 		if (key == 0) continue;
 
 		IAscMessageReader* reader =
-			AscReaderRegistry::instance().create(key, asc_reader_cache);
+			AscReaderRegistry::instance().find_reader(key, asc_reader_cache);
 		if (!reader) continue;
 
 		BusMessagePtr msg = reader->read_line(line, start_measure_time_);
@@ -518,6 +533,18 @@ void AscLogger::reader_thread_handler()
 		}
 		msg_cv_.notify_one();
 	}
+}
+
+IMessageWriter* AscLogger::create_writer(BusType bus_type)
+{
+	if (auto it = writer_.find(bus_type); it != writer_.end())
+		return it->second.get();
+
+	const auto* fac = WriterRegistry::get_instance().find_writer(FileFormat::ASC, bus_type);
+	if (!fac) return nullptr;
+
+	auto [it, inserted] = writer_.emplace(bus_type, std::move((*fac)()));
+	return it->second.get();
 }
 
 }

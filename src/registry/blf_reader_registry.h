@@ -23,7 +23,7 @@ public:
 		registry_[object_type] = std::move(factory);
 	}
 
-	std::unique_ptr<IMessageReader> create(uint32_t object_type) const {
+	std::unique_ptr<IMessageReader> find_reader(uint32_t object_type) const {
 		auto it = registry_.find(object_type);
 		return it == registry_.end() ? nullptr : it->second();
 	}
