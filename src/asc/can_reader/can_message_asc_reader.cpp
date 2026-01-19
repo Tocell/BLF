@@ -1,16 +1,13 @@
 #include "can_message_asc_reader.h"
 
-#include "../../registry/blf_reader_registrar.h"
 #include "../../registry/blf_reader_registry.h"
 #include "../../object/can/can_message.h"
 
-#include <cmath>
 #include <algorithm>
 #include <cctype>
 #include <charconv>
 #include <cstdlib>
 #include <string>
-#include <string_view>
 #include <vector>
 
 namespace BLF

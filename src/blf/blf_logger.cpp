@@ -1,14 +1,11 @@
 #include "blf_logger.h"
 #include "can_writer/can_message_blf_writer.h"
 
-#include <iostream>
-
 #include "can_message.h"
 #include "blf_object_header.h"
 #include "../include/message_factory.h"
 #include "../api/imessage_reader.h"
 #include "../registry/blf_reader_registry.h"
-#include "../registry/blf_reader_registrar.h"
 #include "zlib.h"
 
 namespace BLF
@@ -19,7 +16,6 @@ BlfLogger::BlfLogger()
 	compression_method_(0),
 	compression_level_(0)
 {
-	// writer_ = WriterRegistry::get_instance().create_writers(FileFormat::BLF);
 	writer_.reserve(200);
 }
 
@@ -257,8 +253,6 @@ void BlfLogger::writer_thread_handler()
 		{
 			msg = std::move(msg_queue.front());
 			const auto bus_type = msg->get_bus_type();
-			// auto it = writer_.find(bus_type);
-			// if (it == writer_.end()) continue;
 			auto* w = create_writer(bus_type);
 			if (!w)
 			{
@@ -271,7 +265,6 @@ void BlfLogger::writer_thread_handler()
 				flush_logcontainer(log_container_.get_logcontainer());
 			}
 
-			// auto retult = it->second->write(*msg, file_writer_);
 			auto result = w->write(*msg, file_writer_);
 			(void)result;
 			frame_count_.fetch_add(1);
@@ -511,12 +504,9 @@ IMessageWriter* BlfLogger::create_writer(BusType bus_type)
 	const auto* fac = WriterRegistry::get_instance().find_writer(FileFormat::BLF, bus_type);
 	if (!fac) return nullptr;
 
-	auto obj = (*fac)();               // create
-	auto* p = obj.get();
-	writer_.emplace(bus_type, std::move(obj));
-	return p;
+	auto [it, inserted] = writer_.emplace(bus_type, std::move((*fac)()));
+	return it->second.get();
 }
-
 
 
 }

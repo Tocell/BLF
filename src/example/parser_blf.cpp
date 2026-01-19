@@ -1,6 +1,6 @@
 #include <iostream>
 #include "../include/logger.h"
-#include "../include/types.h"
+#include "../include/bus_message.h"
 #include "../include/can_object.h"
 #include "../object/can/can_message.h"
 #include "../include/message_factory.h"

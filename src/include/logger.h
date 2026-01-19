@@ -3,7 +3,7 @@
 #include <memory>
 #include <string>
 
-#include "types.h"
+#include "bus_message.h"
 #include "message_factory.h"
 
 namespace BLF

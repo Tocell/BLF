@@ -1,7 +1,7 @@
 #ifndef IMESSAGE_WRITER_H
 #define IMESSAGE_WRITER_H
 
-#include "../include/types.h"
+#include "../include/bus_message.h"
 #include "file_writer.h"
 
 namespace BLF

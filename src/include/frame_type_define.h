@@ -199,6 +199,31 @@ namespace BLF
 #define BL_OBJ_FLAG_TIME_ONE_NANS				0x00000002 /* 1 nano second timestamp */
 
 #define BUFFER_MAX_SIZE							(4 * 1024 * 1024)
+
+enum class FileFormat {
+	BLF,
+	ASC,
+	TXT
+};
+
+enum class BusType {
+	UNKNOWN = 0,
+	CAN,
+	CAN2,
+	CAN_FD,
+	LIN,
+	FLEXRAY,
+	ETHERNET
+};
+
+enum class OpenMode {
+	Read,
+	Write
+};
+
+#define TIME_TEN_MICS     0x00000001 /* 10 micro second timestamp */
+#define TIME_ONE_NANS     0x00000002 /* 1 nano second timestamp */
+
 }
 
 #endif //FRAME_TYPE_DEFINE_H

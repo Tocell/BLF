@@ -1,7 +1,7 @@
 #ifndef MESSAGE_FACTORY_H
 #define MESSAGE_FACTORY_H
 
-#include "types.h"
+#include "bus_message.h"
 #include "can_object.h"
 #include <memory>
 #include <type_traits>

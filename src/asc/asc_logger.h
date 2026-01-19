@@ -4,14 +4,12 @@
 #include "../include/logger.h"
 #include "../api/imessage_writer.h"
 #include "../registry/logger_registrar.h"
+#include "file_reader.h"
 
-#include <map>
 #include <thread>
 #include <mutex>
 #include <queue>
 #include <condition_variable>
-
-#include "file_reader.h"
 
 #define MAX_FRAME_CACHE_COUNT (300 * 1000)
 
@@ -47,7 +45,6 @@ public:
 	void reader_thread_handler();
 
 private:
-	// std::map<BusType, std::unique_ptr<IMessageWriter>> writer_;
 	std::unordered_map<BusType, std::unique_ptr<IMessageWriter>> writer_;
 	IMessageWriter* create_writer(BusType bus_type);
 

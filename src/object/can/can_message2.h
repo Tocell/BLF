@@ -1,7 +1,8 @@
 #ifndef CAN_MESSAGE2_H
 #define CAN_MESSAGE2_H
-#include "../../include/types.h"
+#include "../../include/bus_message.h"
 #include "../../include/can_object.h"
+#include "../../include/message_factory.h"
 
 namespace BLF
 {
@@ -24,16 +25,10 @@ private:
 	std::unique_ptr<Impl> impl;
 };
 
-}
+// 工厂模式显示特化
+template <>
+struct MessageType<CanFrame2> { using type = CanMessage2; };
 
-#include "../../include/message_factory.h"
-namespace BLF
-{
-	template <>
-	struct MessageType<CanFrame2>
-	{
-		using type = CanMessage2;
-	};
 }
 
 #endif //CAN_MESSAGE2_H

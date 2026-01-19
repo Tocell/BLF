@@ -107,5 +107,4 @@ bool FileReader::has_error() const
 	return file_.bad();
 }
 
-
 }

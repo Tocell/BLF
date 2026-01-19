@@ -18,10 +18,8 @@ FileWriter::~FileWriter()
 bool FileWriter::open(const std::string& filename)
 {
 	close();
-
 	filename_ = filename;
 	file_.open(filename, std::ios::out | std::ios::binary | std::ios::trunc);
-
 	return true;
 }
 
@@ -60,7 +58,6 @@ void FileWriter::append(const uint8_t* data, size_t size)
 	if (pos_ + size > BUFFER_MAX_SIZE) {
 		throw std::runtime_error("FileWriter::append overflow");
 	}
-	// memcpy(buffer_ + pos_, data, size);
 	std::memcpy(buffer_.data() + pos_, data, size);
 	pos_ += size;
 }

@@ -22,7 +22,6 @@ inline uint64_t get_posix_time_us_uint64()
 AscLogger::AscLogger():
 	frame_count_(0)
 {
-	// writer_ = WriterRegistry::get_instance().create_writers(FileFormat::ASC);
 	writer_.reserve(200);
 }
 
@@ -412,14 +411,6 @@ void AscLogger::writer_thread_handler()
 				msg_queue.pop();
 				continue;
 			}
-
-			// if ((file_writer_.get_pos() + 400) >= BUFFER_MAX_SIZE)
-			// {
-			// 	file_writer_.write(file_writer_.get_buffer(), file_writer_.get_pos());
-			// 	file_writer_.set_pos(0);
-			// }
-			//
-			// auto result = it->second->write(*msg, file_writer_);
 
 			if ((file_writer_.get_pos() + 400) >= BUFFER_MAX_SIZE)
 			{

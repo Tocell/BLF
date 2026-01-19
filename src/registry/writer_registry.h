@@ -7,7 +7,7 @@
 #include <memory>
 
 #include "../api/imessage_writer.h"
-#include "../include/types.h"
+#include "../include/bus_message.h"
 
 namespace BLF
 {

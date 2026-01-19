@@ -12,7 +12,6 @@ namespace BLF
 class CanMessageAscReader : public IAscMessageReader
 {
 public:
-    // CanMessageAscReader();
     ~CanMessageAscReader() override = default;
 
 	static constexpr uint32_t kKey = BL_OBJ_TYPE_CAN_MESSAGE;
