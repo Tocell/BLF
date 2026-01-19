@@ -1,8 +1,7 @@
 #ifndef READER_REGISTRAR_H
 #define READER_REGISTRAR_H
-#include <fmt/format.h>
 
-#include "reader_registry.h"
+#include "blf_reader_registry.h"
 
 namespace BLF
 {

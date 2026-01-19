@@ -43,15 +43,15 @@ int main()
             if (!can) continue;
 
             const BLF::CanFrame& f = can->get_frame();
+            ++cnt;
             printf("[CAN] %d ts=%llu ch=%u id=0x%X dlc=%u data=",
-            	   ++cnt, (unsigned long long)ts, f.channel, f.id, f.dlc);
+            	   cnt, (unsigned long long)ts, f.channel, f.id, f.dlc);
             for (int i = 0; i < f.dlc && i < 8; ++i)
             	printf("%02X ", f.data[i]);
             printf("\n");
         }
-        ++cnt;
     }
-    printf("[CAN] %d\n", cnt);
+    // printf("[CAN] %d\n", cnt);
 
     logger->close();
     return 0;

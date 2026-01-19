@@ -34,7 +34,7 @@ public:
 
     // 阻塞模式等待数据 当读取到文件末尾 返回 false
     virtual bool read(BusMessagePtr& msg) = 0;
-
+    // 用于读取时 获取文件开始和停止时间  asc 文件没有停止时间
     virtual void get_measure_time(uint64_t& start_time, uint64_t& stop_time) = 0;
 };
 

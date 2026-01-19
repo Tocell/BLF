@@ -7,7 +7,6 @@
 #include <iomanip>
 #include <sstream>
 
-#include "asc_object_type_manager.h"
 #include "../api/iasc_message_reader.h"
 #include "../registry/asc_reader_registrar.h"
 
@@ -140,7 +139,7 @@ bool AscLogger::read(BusMessagePtr& msg)
 {
 	std::unique_lock lock(msg_mtx_);
 	msg_cv_.wait(lock, [&]{
-		return !msg_queue_.empty();
+		return !msg_queue_.empty() || file_eof_;
 	});
 	if (!msg_queue_.empty())
 	{
@@ -422,12 +421,63 @@ void AscLogger::writer_thread_handler()
 	}
 }
 
+static inline std::string_view nth_token_ws(std::string_view s, int n /*0-based*/)
+{
+	size_t i = 0;
+	int col = 0;
+
+	auto skip_ws = [&]{
+		while (i < s.size() && std::isspace((unsigned char)s[i])) ++i;
+	};
+
+	skip_ws();
+	while (i < s.size())
+	{
+		size_t b = i;
+		while (i < s.size() && !std::isspace((unsigned char)s[i])) ++i;
+		size_t e = i;
+
+		if (col == n) return s.substr(b, e - b);
+		++col;
+
+		skip_ws();
+	}
+	return {};
+}
+
+static inline bool is_comment_or_empty(std::string_view s)
+{
+	size_t i = 0;
+	while (i < s.size() && std::isspace((unsigned char)s[i])) ++i;
+	if (i >= s.size()) return true;
+	return (i + 1 < s.size() && s[i] == '/' && s[i+1] == '/');
+}
+
+static inline uint32_t fast_extract_key(std::string_view line)
+{
+	if (is_comment_or_empty(line)) return 0;
+
+	// Classic CAN: t3=Tx/Rx/TxRq, t4=d/r
+	auto t3 = nth_token_ws(line, 3);
+	auto t4 = nth_token_ws(line, 4);
+
+	if (!t3.empty() && !t4.empty())
+	{
+		const bool dir_ok = (t3 == "Tx" || t3 == "Rx" || t3 == "TxRq");
+		const bool dr_ok  = (t4 == "d"  || t4 == "r");
+		if (dir_ok && dr_ok)
+			return BL_OBJ_TYPE_CAN_MESSAGE;
+	}
+
+	return 0; // unknown
+}
+
 void AscLogger::reader_thread_handler()
 {
 	std::string line;
 	constexpr auto kWakeInterval = std::chrono::microseconds(100);
 
-	std::vector<std::unique_ptr<IAscMessageReader>> asc_reader_cache;
+	std::unordered_map<uint32_t, std::unique_ptr<IAscMessageReader>> asc_reader_cache;
 
 	while (is_running_.load())
 	{
@@ -435,7 +485,7 @@ void AscLogger::reader_thread_handler()
 			std::unique_lock lock(msg_mtx_);
 			msg_cv_.wait_for(lock, kWakeInterval, [this]()
 			{
-				return msg_queue_.size() < 300 * 1000;
+				return msg_queue_.size() < 300 * 1000 || !is_running_.load();
 			});
 			if (!is_running_.load() || file_eof_.load()) break;
 			if (msg_queue_.size() >= 300 * 1000) continue;
@@ -453,9 +503,11 @@ void AscLogger::reader_thread_handler()
 
 		if (line.empty() || is_asc_comment_line(line)) continue;
 
-		IAscMessageReader* reader =
-			AscReaderRegistry::instance().pick_reader(line, asc_reader_cache);
+		const uint32_t key = fast_extract_key(line);
+		if (key == 0) continue;
 
+		IAscMessageReader* reader =
+			AscReaderRegistry::instance().create(key, asc_reader_cache);
 		if (!reader) continue;
 
 		BusMessagePtr msg = reader->read_line(line, start_measure_time_);

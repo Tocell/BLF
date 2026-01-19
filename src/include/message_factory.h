@@ -8,7 +8,6 @@
 
 namespace BLF {
 
-// 配套的销毁函数，也必须从 DLL 导出
 BLF_API void destroy_message(BusMessage* message);
 
 struct MessageDeleter {

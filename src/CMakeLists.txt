@@ -19,7 +19,6 @@ add_library(blf SHARED ${SOURCE})
 
 target_link_libraries(blf PRIVATE
         ZLIB::ZLIB
-        utility
 )
 target_include_directories(blf PRIVATE
         ${CMAKE_CURRENT_SOURCE_DIR}/include
@@ -43,6 +42,3 @@ if (WIN32)
     # 指定Windows版本
     target_compile_definitions(blf PRIVATE _WIN32_WINNT=0x0A00)
 endif ()
-
-add_subdirectory(utility)
-add_dependencies(blf utility)

@@ -13,7 +13,7 @@ class IAscMessageReader
 public:
     virtual ~IAscMessageReader() = default;
 
-    virtual bool match(const std::string& line) const = 0;
+    virtual uint32_t key() const = 0;
 
     virtual BusMessagePtr read_line(const std::string& line, uint64_t file_start_time) const = 0;
 };

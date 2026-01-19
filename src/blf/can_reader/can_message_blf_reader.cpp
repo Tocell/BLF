@@ -1,7 +1,7 @@
 #include "can_message_blf_reader.h"
 
-#include "../../registry/reader_registrar.h"
-#include "../../registry/reader_registry.h"
+#include "../../registry/blf_reader_registrar.h"
+#include "../../registry/blf_reader_registry.h"
 #include "../../object/can/can_message.h"
 
 namespace BLF

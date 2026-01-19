@@ -4,9 +4,9 @@
 #include <string>
 #include <fstream>
 #include <cstdint>
+#include <array>
 
 #include "../blf/blf_object_header.h"
-#include "types.h"
 
 namespace BLF
 {
@@ -60,7 +60,8 @@ private:
 	std::ofstream file_{};
 	std::string filename_{};
 
-	uint8_t buffer_[BUFFER_MAX_SIZE]{};
+	// uint8_t buffer_[BUFFER_MAX_SIZE]{};
+	std::array<uint8_t, BUFFER_MAX_SIZE> buffer_{};
 	uint64_t pos_;
 
 	uint64_t file_start_time_{};

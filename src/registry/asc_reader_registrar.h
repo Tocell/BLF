@@ -10,7 +10,7 @@ template<typename T>
 class AscReaderRegistrar {
 public:
     AscReaderRegistrar() {
-        AscReaderRegistry::instance().registry_reader([]{
+        AscReaderRegistry::instance().registry_reader(T::kKey, []{
             return std::make_unique<T>();
         });
     }

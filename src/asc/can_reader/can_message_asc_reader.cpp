@@ -1,41 +1,103 @@
 #include "can_message_asc_reader.h"
 
-#include "../../registry/reader_registrar.h"
-#include "../../registry/reader_registry.h"
+#include "../../registry/blf_reader_registrar.h"
+#include "../../registry/blf_reader_registry.h"
 #include "../../object/can/can_message.h"
-#include "../asc_object_type_manager.h"
-#include "asc_praser_line_helper.h"
 
 #include <cmath>
+#include <algorithm>
+#include <cctype>
+#include <charconv>
+#include <cstdlib>
+#include <string>
+#include <string_view>
+#include <vector>
 
 namespace BLF
 {
 
 static AscReaderRegistrar<CanMessageAscReader> reg_can;
 
-bool CanMessageAscReader::match(const std::string& line) const
+uint32_t CanMessageAscReader::key() const
 {
-    if (line.empty()) return false;
-    if (line.size() >= 2 && line[0] == '/' && line[1] == '/') return false;
+    return kKey;
+}
 
-    auto t = split_ws(line);
-    if (t.size() < 6) return false;
+static inline std::vector<std::string> split_ws(const std::string& s)
+{
+    std::vector<std::string> out;
+    std::string cur;
+    cur.reserve(16);
 
-    // dir + d/r
-    if (!(t[3] == "Tx" || t[3] == "Rx" || t[3] == "TxRq")) return false;
-    if (!(t[4] == "d"  || t[4] == "r")) return false;
+    for (unsigned char ch : s)
+    {
+        if (std::isspace(ch))
+        {
+            if (!cur.empty())
+            {
+                out.push_back(std::move(cur));
+                cur.clear();
+                cur.reserve(16);
+            }
+        }
+        else
+        {
+            cur.push_back(static_cast<char>(ch));
+        }
+    }
+    if (!cur.empty())
+        out.push_back(std::move(cur));
+    return out;
+}
 
-    // time/channel/dlc 基本合法性
-    double ts = 0.0;
-    if (!parse_double_strict(t[0], ts)) return false;
+static inline bool parse_double_strict(const std::string& s, double& out)
+{
+    // strtod 容忍度较高，但这里用 endptr 保证全串吃完
+    char* endp = nullptr;
+    out = std::strtod(s.c_str(), &endp);
+    return endp && *endp == '\0';
+}
 
-    int ch = 0;
-    if (!parse_int_strict(t[1], ch)) return false;
+static inline bool parse_int_strict(const std::string& s, int& out)
+{
+    const char* b = s.data();
+    const char* e = s.data() + s.size();
+    auto r = std::from_chars(b, e, out, 10);
+    return r.ec == std::errc{} && r.ptr == e;
+}
 
-    int dlc = 0;
-    if (!parse_int_strict(t[5], dlc) || dlc < 0 || dlc > 8) return false;
+static inline bool parse_u32_base_strict(const std::string& s, int base, uint32_t& out)
+{
+    // base=10 or 16
+    char* endp = nullptr;
+    unsigned long v = std::strtoul(s.c_str(), &endp, base);
+    if (endp == s.c_str() || *endp != '\0') return false;
+    if (v > 0xFFFFFFFFul) return false;
+    out = static_cast<uint32_t>(v);
+    return true;
+}
 
-    if (t[4] == "d" && (int)t.size() < 6 + dlc) return false;
+static inline bool parse_byte_hex2(const std::string& s, uint8_t& out)
+{
+    if (s.size() != 2) return false;
+    auto hex = [](char c)->int {
+        if (c >= '0' && c <= '9') return c - '0';
+        if (c >= 'a' && c <= 'f') return 10 + (c - 'a');
+        if (c >= 'A' && c <= 'F') return 10 + (c - 'A');
+        return -1;
+    };
+    int hi = hex(s[0]), lo = hex(s[1]);
+    if (hi < 0 || lo < 0) return false;
+    out = static_cast<uint8_t>((hi << 4) | lo);
+    return true;
+}
+
+static inline bool parse_byte_dec(const std::string& s, uint8_t& out)
+{
+    int v = 0;
+    if (!parse_int_strict(s, v)) return false;
+    if (v < 0 || v > 255) return false;
+    out = static_cast<uint8_t>(v);
     return true;
 }
 

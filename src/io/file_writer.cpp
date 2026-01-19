@@ -60,7 +60,8 @@ void FileWriter::append(const uint8_t* data, size_t size)
 	if (pos_ + size > BUFFER_MAX_SIZE) {
 		throw std::runtime_error("FileWriter::append overflow");
 	}
-	memcpy(buffer_ + pos_, data, size);
+	// memcpy(buffer_ + pos_, data, size);
+	std::memcpy(buffer_.data() + pos_, data, size);
 	pos_ += size;
 }
 
@@ -104,7 +105,7 @@ bool FileWriter::seek(uint64_t pos)
 
 uint8_t* FileWriter::get_buffer()
 {
-	return buffer_;
+	return buffer_.data();
 }
 
 }

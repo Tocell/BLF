@@ -3,7 +3,7 @@
 
 #include "../../api/iasc_message_reader.h"
 #include "../../registry/asc_reader_registrar.h"
-// #include "../blf_object_header.h"
+#include "../include/frame_type_define.h"
 #include "../../io/file_reader.h"
 
 namespace BLF
@@ -15,7 +15,9 @@ public:
     // CanMessageAscReader();
     ~CanMessageAscReader() override = default;
 
-    [[nodiscard]] bool match(const std::string& line) const override;
+	static constexpr uint32_t kKey = BL_OBJ_TYPE_CAN_MESSAGE;
+
+	uint32_t key() const override;
 
     [[nodiscard]] BusMessagePtr read_line(const std::string& line,
                             uint64_t file_start_posix_us) const override;

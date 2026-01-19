@@ -7,8 +7,8 @@
 #include "blf_object_header.h"
 #include "../include/message_factory.h"
 #include "../api/imessage_reader.h"
-#include "../registry/reader_registry.h"
-#include "../registry/reader_registrar.h"
+#include "../registry/blf_reader_registry.h"
+#include "../registry/blf_reader_registrar.h"
 #include "zlib.h"
 
 namespace BLF

@@ -92,9 +92,7 @@ private:
 	std::queue<LogContainerBlock> log_queue_;
 };
 
-
 static LoggerRegistrar<BlfLogger> registrar(FileFormat::BLF);
-
 
 }
 

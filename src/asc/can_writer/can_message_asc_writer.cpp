@@ -7,8 +7,6 @@
 #include <sstream>
 #include <string>
 
-#include "../asc_object_type_manager.h"
-
 namespace BLF
 {
 
@@ -17,7 +15,6 @@ static WriterRegistrar<CanMessageAscWriter> registrar(FileFormat::ASC, BusType::
 CanMessageAscWriter::CanMessageAscWriter():
 	timestamp_unit_(0)
 {
-	AscObjectTypeManager::register_type_manager("d", BL_OBJ_TYPE_CAN_MESSAGE);
 }
 
 void CanMessageAscWriter::set_timestamp_unit(int32_t unit)

@@ -12,7 +12,6 @@ public:
 	CanMessageBlfReader();
 	~CanMessageBlfReader() override = default;
 	BusMessagePtr read(const uint8_t* obj_begin, size_t obj_size) override;
-
 };
 
 };

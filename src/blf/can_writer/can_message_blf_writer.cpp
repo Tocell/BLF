@@ -1,6 +1,6 @@
 #include "can_message_blf_writer.h"
 #include "can_message.h"
-#include "reader_registrar.h"
+#include "blf_reader_registrar.h"
 
 namespace BLF
 {

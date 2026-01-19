@@ -2,6 +2,7 @@
 #define BLF_LOGGER_ASC_READER_REGISTRY_H
 #include <memory>
 #include <functional>
+#include <unordered_map>
 
 #include "../api/iasc_message_reader.h"
 
@@ -19,31 +20,29 @@ public:
         return inst;
     }
 
-    void registry_reader(AscReaderFactory f)
+    void registry_reader(uint32_t key, AscReaderFactory f)
     {
-        registry_.push_back(std::move(f));
+        registry_[key] = std::move(f);
     }
 
-    IAscMessageReader* pick_reader(const std::string& line,
-        std::vector<std::unique_ptr<IAscMessageReader>>& cache) const
+    IAscMessageReader* create(
+        uint32_t key,
+        std::unordered_map<uint32_t, std::unique_ptr<IAscMessageReader>>& cache) const
     {
-        for (auto& r : cache)
-        {
-            if (r->match(line))
-                return r.get();
-        }
+        if (auto itc = cache.find(key); itc != cache.end())
+            return itc->second.get();
 
-        for (auto&f : registry_)
-        {
-            cache.push_back(f());
-            if (cache.back()->match(line))
-                return cache.back().get();
-        }
-        return nullptr;
+        // 再查 registry
+        auto itr = registry_.find(key);
+        if (itr == registry_.end())
+            return nullptr;
+
+        auto [it, inserted] = cache.emplace(key, itr->second());
+        return it->second.get();
     }
 
 private:
-    std::vector<AscReaderFactory> registry_;
+    std::unordered_map<uint32_t, AscReaderFactory> registry_;
 };
 
 }
