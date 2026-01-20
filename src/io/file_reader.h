@@ -4,7 +4,7 @@
 #include <fstream>
 #include <string>
 
-namespace BLF
+namespace GWLogger
 {
 
 class FileReader

@@ -6,10 +6,10 @@
 #include "bus_message.h"
 #include "message_factory.h"
 
-namespace BLF
+namespace GWLogger
 {
 
-class BLF_API Logger {
+class GWLOGGER_API Logger {
 public:
     // 创建记录对象
     static std::unique_ptr<Logger> create(FileFormat format);

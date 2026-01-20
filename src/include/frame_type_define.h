@@ -1,7 +1,7 @@
 #ifndef FRAME_TYPE_DEFINE_H
 #define FRAME_TYPE_DEFINE_H
 
-namespace BLF
+namespace GWLogger
 {
 
 #define BL_OBJ_TYPE_UNKNOWN                       0       /* unknown object */

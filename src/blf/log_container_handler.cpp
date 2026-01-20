@@ -2,7 +2,7 @@
 #include "zlib.h"
 #include <iostream>
 
-namespace BLF
+namespace GWLogger::Blf
 {
 
 LogContainerHandler::LogContainerHandler()

@@ -3,10 +3,9 @@
 
 #include <string>
 
-#include "../include/message_factory.h"
+#include "message_factory.h"
 
-namespace BLF
-{
+namespace GWLogger::Asc{
 
 class IAscMessageReader
 {

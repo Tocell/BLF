@@ -1,10 +1,10 @@
-#include "../include/message_factory.h"
-#include "../include/bus_message.h"
+#include "message_factory.h"
+#include "bus_message.h"
 
-namespace BLF
+namespace GWLogger
 {
 
-BLF_API void destroy_message(BusMessage* message)
+GWLOGGER_API void destroy_message(BusMessage* message)
 {
 	delete message;
 }

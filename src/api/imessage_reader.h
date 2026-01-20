@@ -1,8 +1,8 @@
 #ifndef IMESSAGE_READER_H
 #define IMESSAGE_READER_H
-#include "../include/message_factory.h"
+#include "message_factory.h"
 
-namespace BLF
+namespace GWLogger
 {
 
 class IMessageReader

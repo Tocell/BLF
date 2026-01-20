@@ -3,9 +3,9 @@
 #include <memory>
 #include <unordered_map>
 #include <functional>
-#include "../api/imessage_reader.h"
+#include "imessage_reader.h"
 
-namespace BLF
+namespace GWLogger::Blf
 {
 using ReaderFactory = std::function<std::unique_ptr<IMessageReader>()>;
 
@@ -23,12 +23,12 @@ public:
 		registry_[object_type] = std::move(factory);
 	}
 
-	std::unique_ptr<IMessageReader> find_reader(uint32_t object_type) const {
+	[[nodiscard]] std::unique_ptr<IMessageReader> find_reader(uint32_t object_type) const {
 		auto it = registry_.find(object_type);
 		return it == registry_.end() ? nullptr : it->second();
 	}
 
-	IMessageReader* get_singleton(uint32_t object_type) const = delete;
+	[[nodiscard]] IMessageReader* get_singleton(uint32_t object_type) const = delete;
 
 private:
 	std::unordered_map<uint32_t, ReaderFactory> registry_;

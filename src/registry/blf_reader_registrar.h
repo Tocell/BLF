@@ -3,7 +3,7 @@
 
 #include "blf_reader_registry.h"
 
-namespace BLF
+namespace GWLogger::Blf
 {
 
 template<typename T_Reader>

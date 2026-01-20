@@ -1,13 +1,13 @@
 #ifndef CAN_MESSAGE_H
 #define CAN_MESSAGE_H
-#include "../../include/bus_message.h"
-#include "../../include/can_object.h"
-#include "../../include/message_factory.h"
+#include "bus_message.h"
+#include "can_object.h"
+#include "message_factory.h"
 
-namespace BLF
+namespace GWLogger
 {
 
-class BLF_API CanMessage : public BusMessage
+class GWLOGGER_API CanMessage : public BusMessage
 {
 public:
 	explicit CanMessage(const CanFrame& frame_data);

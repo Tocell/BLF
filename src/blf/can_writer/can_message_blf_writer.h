@@ -1,9 +1,9 @@
 #ifndef CAN_MESSAGE_BLF_WRITER_H
 #define CAN_MESSAGE_BLF_WRITER_H
-#include "../../api/imessage_writer.h"
-#include "../../registry/writer_registrar.h"
+#include "imessage_writer.h"
+#include "writer_registrar.h"
 
-namespace BLF
+namespace GWLogger::Blf
 {
 
 class CanMessageBlfWriter : public IMessageWriter

@@ -3,10 +3,10 @@
 
 #include <cstdint>
 #include <ios>
-#include "../include/can_object.h"
-#include "../include/frame_type_define.h"
+#include "can_object.h"
+#include "frame_type_define.h"
 
-namespace BLF
+namespace GWLogger::Blf
 {
 
 #define BL_OBJ_SIGNATURE                 0x4A424F4C       /* object signature */

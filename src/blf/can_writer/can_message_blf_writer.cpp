@@ -2,7 +2,7 @@
 #include "can_message.h"
 #include "blf_reader_registrar.h"
 
-namespace BLF
+namespace GWLogger::Blf
 {
 
 static WriterRegistrar<CanMessageBlfWriter> registrar(FileFormat::BLF, BusType::CAN);

@@ -1,10 +1,10 @@
 #include "can_message_blf_reader.h"
 
-#include "../../registry/blf_reader_registrar.h"
-#include "../../registry/blf_reader_registry.h"
-#include "../../object/can/can_message.h"
+#include "blf_reader_registrar.h"
+#include "blf_reader_registry.h"
+#include "can_message.h"
 
-namespace BLF
+namespace GWLogger::Blf
 {
 
 static ReaderRegistrar<CanMessageBlfReader> registrar(BL_OBJ_TYPE_CAN_MESSAGE);

@@ -7,7 +7,7 @@
 #include <sstream>
 #include <string>
 
-namespace BLF
+namespace GWLogger::Asc
 {
 
 static WriterRegistrar<CanMessageAscWriter> registrar(FileFormat::ASC, BusType::CAN);

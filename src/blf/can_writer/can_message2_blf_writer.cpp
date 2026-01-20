@@ -1,7 +1,7 @@
 #include "can_message2_blf_writer.h"
 #include "can_message2.h"
 
-namespace BLF
+namespace GWLogger::Blf
 {
 
 static WriterRegistrar<CanMessage2BlfWriter> registrar(FileFormat::BLF, BusType::CAN2);

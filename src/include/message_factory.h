@@ -6,9 +6,9 @@
 #include <memory>
 #include <type_traits>
 
-namespace BLF {
+namespace GWLogger {
 
-BLF_API void destroy_message(BusMessage* message);
+GWLOGGER_API void destroy_message(BusMessage* message);
 
 struct MessageDeleter {
 	void operator()(BusMessage* ptr) const noexcept

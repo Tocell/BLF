@@ -6,10 +6,10 @@
 #include <unordered_map>
 #include <memory>
 
-#include "../api/imessage_writer.h"
-#include "../include/bus_message.h"
+#include "imessage_writer.h"
+#include "bus_message.h"
 
-namespace BLF
+namespace GWLogger
 {
 
 using WriterFactory = std::function<std::unique_ptr<IMessageWriter>()>;

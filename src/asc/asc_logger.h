@@ -1,9 +1,9 @@
 #ifndef ASC_LOGGER_H
 #define ASC_LOGGER_H
 
-#include "../include/logger.h"
-#include "../api/imessage_writer.h"
-#include "../registry/logger_registrar.h"
+#include "logger.h"
+#include "imessage_writer.h"
+#include "logger_registrar.h"
 #include "file_reader.h"
 
 #include <thread>
@@ -13,7 +13,7 @@
 
 #define MAX_FRAME_CACHE_COUNT (300 * 1000)
 
-namespace BLF
+namespace GWLogger::Asc
 {
 class AscLogger : public Logger
 {

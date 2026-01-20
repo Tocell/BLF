@@ -1,12 +1,12 @@
 #ifndef FILE_STATISTICS_H
 #define FILE_STATISTICS_H
-#include "../io/file_writer.h"
+#include "file_writer.h"
 #include "blf_object_header.h"
 
 #include <chrono>
 #include <iostream>
 
-namespace BLF
+namespace GWLogger::Blf
 {
 
 inline uint64_t get_posix_time_us_uint64()

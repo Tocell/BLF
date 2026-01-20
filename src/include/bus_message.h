@@ -5,18 +5,18 @@
 #include "frame_type_define.h"
 
 #ifdef _WIN32
-	#ifdef BLF_EXPORTS
-		#define BLF_API __declspec(dllexport)
+	#ifdef GWLOGGER_EXPORTS
+		#define GWLOGGER_API __declspec(dllexport)
 	#else
-		#define BLF_API __declspec(dllimport)
+		#define GWLOGGER_API __declspec(dllimport)
 	#endif
 #else
-	#define BLF_API __attribute__((visibility("default")))
+	#define GWLOGGER_API __attribute__((visibility("default")))
 #endif
 
-namespace BLF {
+namespace GWLogger {
 
-class BLF_API BusMessage
+class GWLOGGER_API BusMessage
 {
 public:
 	virtual ~BusMessage() = default;

@@ -6,9 +6,9 @@
 #include <cstdint>
 #include <array>
 
-#include "../blf/blf_object_header.h"
+#include "blf_object_header.h"
 
-namespace BLF
+namespace GWLogger
 {
 
 class FileWriter

@@ -2,7 +2,7 @@
 
 #include <iostream>
 
-namespace BLF{
+namespace GWLogger{
 
 FileWriter::FileWriter()
 	: pos_(0)

@@ -2,7 +2,7 @@
 #define LOGGER_REGISTRAR_H
 
 #include "logger_registry.h"
-namespace BLF
+namespace GWLogger
 {
 
 template<class T>

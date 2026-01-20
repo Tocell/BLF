@@ -1,10 +1,11 @@
 #ifndef CAN_MESSAGE_BLF_READER_H
 #define CAN_MESSAGE_BLF_READER_H
-#include "../../api/imessage_reader.h"
-#include "../blf_object_header.h"
-#include "../../io/file_reader.h"
+#include "imessage_reader.h"
+#include "blf_object_header.h"
+#include "file_reader.h"
 
-namespace BLF{
+namespace GWLogger::Blf
+{
 
 class CanMessageBlfReader : public IMessageReader
 {

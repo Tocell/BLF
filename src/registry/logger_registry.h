@@ -4,9 +4,9 @@
 #include <map>
 #include <memory>
 
-#include "../include/logger.h"
+#include "logger.h"
 
-namespace BLF
+namespace GWLogger
 {
 
 class LoggerRegistry

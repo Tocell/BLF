@@ -1,7 +1,7 @@
 #include "asc_logger.h"
-#include "can_writer/can_message_asc_writer.h"
-#include "../registry/writer_registry.h"
-#include "../api/imessage_reader.h"
+#include "can_message_asc_writer.h"
+#include "writer_registry.h"
+#include "imessage_reader.h"
 #include <chrono>
 #include <ctime>
 #include <iomanip>
@@ -10,7 +10,7 @@
 #include "../api/iasc_message_reader.h"
 #include "../registry/asc_reader_registrar.h"
 
-namespace BLF
+namespace GWLogger::Asc
 {
 
 inline uint64_t get_posix_time_us_uint64()

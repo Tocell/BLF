@@ -1,6 +1,6 @@
 #include "file_reader.h"
 
-namespace BLF
+namespace GWLogger
 {
 
 FileReader::FileReader() : file_size_(0) {}

@@ -1,7 +1,7 @@
 #include "logger.h"
 #include "logger_registry.h"
 
-namespace BLF
+namespace GWLogger
 {
 
 std::unique_ptr<Logger> Logger::create(FileFormat format)

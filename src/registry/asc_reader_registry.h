@@ -4,9 +4,9 @@
 #include <functional>
 #include <unordered_map>
 
-#include "../api/iasc_message_reader.h"
+#include "iasc_message_reader.h"
 
-namespace BLF
+namespace GWLogger::Asc
 {
 
 using AscReaderFactory = std::function<std::unique_ptr<IAscMessageReader>()>;

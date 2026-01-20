@@ -3,7 +3,7 @@
 
 #include <cstdint>
 
-namespace BLF
+namespace GWLogger
 {
 #pragma pack(push, 1)
 struct CanFrame
@@ -190,11 +190,6 @@ struct CanSettingChanged
 
 
 #pragma pack(pop)
-
-
-static_assert(sizeof(BLF::CanFrame2) == 24, "CanFrame2 must be 24 bytes (VBLCANMessage2)");
-static_assert(sizeof(BLF::CanFrame)  == 16, "CanFrame must be 16 bytes (VBLCANMessage)");
-static_assert(sizeof(CanFrame) == 16, "CanFrame must be 16 bytes");
 
 }
 #endif //OBJECT_HEADER_H

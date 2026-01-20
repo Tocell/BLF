@@ -1,12 +1,12 @@
 #include "can_message2.h"
-#include "../../include/can_object.h"
-#include "../../blf/blf_object_header.h"
-#include "../registry/blf_reader_registrar.h"
+#include "can_object.h"
+#include "blf_object_header.h"
+#include "blf_reader_registrar.h"
 
-namespace BLF
+namespace GWLogger
 {
 
-struct BLF_API CanMessage2::Impl
+struct GWLOGGER_API CanMessage2::Impl
 {
 	CanFrame2 frame_{};
 
@@ -36,7 +36,7 @@ void CanMessage2::set_timestamp(uint64_t timestamp)
 	impl->timestamp_ = timestamp;
 }
 
-BLF_API const CanFrame2& CanMessage2::get_frame() const
+GWLOGGER_API const CanFrame2& CanMessage2::get_frame() const
 {
 	return impl->frame_;
 }

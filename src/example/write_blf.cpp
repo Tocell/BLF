@@ -1,10 +1,10 @@
 #include <iostream>
-#include "../include/logger.h"
-#include "../include/bus_message.h"
-#include "../include/can_object.h"
-#include "../object/can/can_message.h"
-#include "../object/can/canfd_message.h"
-#include "../include/message_factory.h"
+#include "logger.h"
+#include "bus_message.h"
+#include "can_object.h"
+#include "can_message.h"
+#include "canfd_message.h"
+#include "message_factory.h"
 
 #include <chrono>
 #include <thread>
@@ -17,8 +17,8 @@ inline uint64_t posix_time_us_uint64()
 
 int main()
 {
-	auto logger = BLF::Logger::create(BLF::FileFormat::BLF);
-	logger->open("test.blf", BLF::OpenMode::Write);
+	auto logger = GWLogger::Logger::create(GWLogger::FileFormat::BLF);
+	logger->open("test.blf", GWLogger::OpenMode::Write);
 	if (logger && logger->is_open())
 	{
 		std::cout << "file test.blf open successful." << std::endl;
@@ -76,7 +76,7 @@ int main()
 	{
 		next += period;
 
-		BLF::CanFdFrame can_frame{};
+		GWLogger::CanFdFrame can_frame{};
 		can_frame.channel = 1;
 		can_frame.flags = 1;
 		can_frame.dlc = 8;

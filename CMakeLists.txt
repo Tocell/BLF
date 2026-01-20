@@ -26,57 +26,6 @@ endforeach()
 
 add_subdirectory(src)
 
-add_executable(write_blf src/example/write_blf.cpp)
-target_link_libraries(write_blf blf)
-
-add_executable(write_asc src/example/write_asc.cpp)
-target_link_libraries(write_asc blf)
-
-add_executable(parser_blf src/example/parser_blf.cpp)
-target_link_libraries(parser_blf blf)
-
-add_executable(parser_asc src/example/parser_asc.cpp)
-target_link_libraries(parser_asc blf)
-
-
-# 强制设置安装路径为项目根目录下的 output
 set(CMAKE_INSTALL_PREFIX "${CMAKE_SOURCE_DIR}/output"
         CACHE PATH "Default installation path" FORCE)
 
-#### 安装规则 ###
-#
-## 1. 安装 src/object 目录及其子目录下的所有头文件
-##    - DIRECTORY: 指定要安装的源目录
-##    - DESTINATION: 指定安装到 <prefix>/include 目录下
-##    - FILES_MATCHING: 只安装匹配模式的文件（这里是.h头文件）
-#install(
-#        DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/src/object/
-#        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
-#        FILES_MATCHING PATTERN "*.h" PATTERN "*.hpp"
-#        PATTERN "abstract_file.h" EXCLUDE
-#        PATTERN "file_statistics.h" EXCLUDE
-#        PATTERN "log_container.h" EXCLUDE
-#)
-#
-## 2. 安装库文件 (blf)
-##    - RUNTIME: .dll 文件 (Windows)
-##    - LIBRARY: .so (Linux), .dll (Windows) 文件
-##    - ARCHIVE: .lib (Windows), .a (Linux) 文件
-#install(TARGETS blf
-#        RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-#        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-#        ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
-#)
-#
-## 3. 安装可执行文件 (demo, parse, benchmark_test)
-#install(TARGETS demo parse benchmark_test
-#        RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-#)
-#
-## 4. 安装 demo 目录下的源文件到 <prefix>/demo 目录下
-#install (FILES
-#        src/demo/main.cpp
-#        src/demo/parse.cpp
-#        src/demo/benchmark.cpp
-#        DESTINATION "demo"
-#)

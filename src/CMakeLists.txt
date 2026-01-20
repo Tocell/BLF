@@ -20,8 +20,13 @@ add_library(blf SHARED ${SOURCE})
 target_link_libraries(blf PRIVATE
         ZLIB::ZLIB
 )
-target_include_directories(blf PRIVATE
+target_include_directories(blf
+        PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}/include
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/can
+
+        PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}
         ${CMAKE_CURRENT_SOURCE_DIR}/blf
         ${CMAKE_CURRENT_SOURCE_DIR}/blf/can_writer
         ${CMAKE_CURRENT_SOURCE_DIR}/blf/can_reader
@@ -36,9 +41,11 @@ target_include_directories(blf PRIVATE
 
 if (WIN32)
     # 导出 BLF_EXPORTS 到lib中
-    target_compile_definitions(blf PRIVATE BLF_EXPORTS)
+    target_compile_definitions(blf PRIVATE GWLOGGER_EXPORTS)
     # 链接Windows所需标准库
     target_link_libraries(blf PRIVATE ws2_32 iphlpapi winmm)
     # 指定Windows版本
     target_compile_definitions(blf PRIVATE _WIN32_WINNT=0x0A00)
 endif ()
+
+add_subdirectory(example)

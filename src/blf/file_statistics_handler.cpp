@@ -2,7 +2,7 @@
 #include <cstdint>
 #include <ctime>
 
-namespace BLF
+namespace GWLogger::Blf
 {
 
 FileStatisticsHandler::FileStatisticsHandler()

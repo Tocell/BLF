@@ -3,7 +3,7 @@
 
 #include "asc_reader_registry.h"
 
-namespace BLF
+namespace GWLogger::Asc
 {
 
 template<typename T>

@@ -3,7 +3,7 @@
 
 #include "blf_object_header.h"
 
-namespace BLF
+namespace GWLogger::Blf
 {
 
 class LogContainerHandler

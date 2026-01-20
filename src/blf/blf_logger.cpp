@@ -1,14 +1,14 @@
 #include "blf_logger.h"
-#include "can_writer/can_message_blf_writer.h"
+#include "can_message_blf_writer.h"
 
 #include "can_message.h"
 #include "blf_object_header.h"
-#include "../include/message_factory.h"
-#include "../api/imessage_reader.h"
-#include "../registry/blf_reader_registry.h"
+#include "message_factory.h"
+#include "imessage_reader.h"
+#include "blf_reader_registry.h"
 #include "zlib.h"
 
-namespace BLF
+namespace GWLogger::Blf
 {
 
 BlfLogger::BlfLogger()

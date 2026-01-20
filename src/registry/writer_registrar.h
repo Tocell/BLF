@@ -3,7 +3,7 @@
 
 #include "writer_registry.h"
 
-namespace BLF
+namespace GWLogger
 {
 
 template<typename T_Writer>

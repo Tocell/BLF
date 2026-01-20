@@ -1,8 +1,8 @@
 #include "canfd_message_blf_writer.h"
-#include "../../object/can/canfd_message.h"
-#include "../../registry/blf_reader_registrar.h"
+#include "canfd_message.h"
+#include "blf_reader_registrar.h"
 
-namespace BLF
+namespace GWLogger::Blf
 {
 
 static WriterRegistrar<CanFdMessageBlfWriter> registrar(FileFormat::BLF, BusType::CAN_FD);

@@ -1,7 +1,7 @@
 #include "can_message_asc_reader.h"
 
-#include "../../registry/blf_reader_registry.h"
-#include "../../object/can/can_message.h"
+#include "blf_reader_registry.h"
+#include "can_message.h"
 
 #include <algorithm>
 #include <cctype>
@@ -10,7 +10,7 @@
 #include <string>
 #include <vector>
 
-namespace BLF
+namespace GWLogger::Asc
 {
 
 static AscReaderRegistrar<CanMessageAscReader> reg_can;
