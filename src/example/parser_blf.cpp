@@ -3,6 +3,8 @@
 #include "bus_message.h"
 #include "can_object.h"
 #include "can_message.h"
+#include "can_message2.h"
+#include "canfd_message.h"
 #include "message_factory.h"
 
 #include <chrono>
@@ -44,6 +46,30 @@ int main()
 
 			const GWLogger::CanFrame& f = can->get_frame();
 			printf("[CAN] %d ts=%llu ch=%u id=0x%X dlc=%u data=",
+				   ++cnt, (unsigned long long)ts, f.channel, f.id, f.dlc);
+			for (int i = 0; i < f.dlc && i < 8; ++i)
+				printf("%02X ", f.data[i]);
+			printf("\n");
+		}
+		else if (type == GWLogger::BusType::CAN2)
+		{
+			auto* can = dynamic_cast<GWLogger::CanMessage2*>(msg.get());
+			if (!can) continue;
+
+			const GWLogger::CanFrame2& f = can->get_frame();
+			printf("[CAN2] %d ts=%llu ch=%u id=0x%X dlc=%u data=",
+				   ++cnt, (unsigned long long)ts, f.channel, f.id, f.dlc);
+			for (int i = 0; i < f.dlc && i < 8; ++i)
+				printf("%02X ", f.data[i]);
+			printf("\n");
+		}
+		else if (type == GWLogger::BusType::CAN_FD)
+		{
+			auto* can = dynamic_cast<GWLogger::CanFdMessage*>(msg.get());
+			if (!can) continue;
+
+			const GWLogger::CanFdFrame& f = can->get_frame();
+			printf("[CANFD] %d ts=%llu ch=%u id=0x%X dlc=%u data=",
 				   ++cnt, (unsigned long long)ts, f.channel, f.id, f.dlc);
 			for (int i = 0; i < f.dlc && i < 8; ++i)
 				printf("%02X ", f.data[i]);

@@ -2,7 +2,6 @@
 #define MESSAGE_FACTORY_H
 
 #include "bus_message.h"
-#include "can_object.h"
 #include <memory>
 #include <type_traits>
 

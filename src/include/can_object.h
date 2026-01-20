@@ -65,7 +65,7 @@ struct CanFdFrame
 	uint32_t reserved3;
 };
 
-struct CanFDFrame64
+struct CanFdFrame64
 {
     uint8_t channel;
     uint8_t dlc;

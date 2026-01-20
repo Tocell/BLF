@@ -3,6 +3,7 @@
 #include "bus_message.h"
 #include "can_object.h"
 #include "can_message.h"
+#include "can_message2.h"
 #include "canfd_message.h"
 #include "message_factory.h"
 
@@ -14,6 +15,7 @@ inline uint64_t posix_time_us_uint64()
 	auto now = std::chrono::system_clock::now();
 	return std::chrono::time_point_cast<std::chrono::microseconds>(now).time_since_epoch().count();
 }
+
 
 int main()
 {
@@ -48,31 +50,58 @@ int main()
 		}
 	});
 
-	// uint32_t id = 0x123;
-	// for (int i = 0; i < 10000; i++)
-	// {
-	// 	next += period;
-	//
-	// 	BLF::CanFrame can_frame{};
-	// 	can_frame.channel = 1;
-	// 	can_frame.flags = 1;
-	// 	can_frame.dlc = 8;
-	// 	can_frame.id = (++id) % 2047;
-	// 	for (auto j = 0; j < can_frame.dlc; j++)
-	// 	{
-	// 		can_frame.data[j] = ((j + 1) * i) % 200;
-	// 	}
-	// 	auto message = make_message(can_frame);
-	//
-	// 	auto time = posix_time_us_uint64();
-	// 	message->set_timestamp(time * 1000ULL);
-	//
-	// 	logger->write(std::move(message));
-	// 	write_cnt.fetch_add(1);
-	// }
-
 	uint32_t id = 0x123;
-	for (int i = 0; i < 1000; i++)
+	for (int i = 0; i < 100; i++)
+	{
+		next += period;
+
+		GWLogger::CanFrame can_frame{};
+		can_frame.channel = 1;
+		can_frame.flags = 1;
+		can_frame.dlc = 8;
+		can_frame.id = (++id) % 2047;
+		for (auto j = 0; j < can_frame.dlc; j++)
+		{
+			can_frame.data[j] = ((j + 1) * i) % 200;
+		}
+		auto message = make_message(can_frame);
+
+		auto time = posix_time_us_uint64();
+		message->set_timestamp(time * 1000ULL);
+
+		logger->write(std::move(message));
+		write_cnt.fetch_add(1);
+	}
+	std::cout << "write CAN  " << write_cnt << " frame." << std::endl;
+
+	id = 0x124;
+	write_cnt = 0;
+	for (int i = 0; i < 100; i++)
+	{
+		next += period;
+
+		GWLogger::CanFrame2 can_frame{};
+		can_frame.channel = 1;
+		can_frame.flags = 1;
+		can_frame.dlc = 8;
+		can_frame.id = (++id) % 2047;
+		for (auto j = 0; j < can_frame.dlc; j++)
+		{
+			can_frame.data[j] = ((j + 1) * i) % 200;
+		}
+		auto message = make_message(can_frame);
+
+		auto time = posix_time_us_uint64();
+		message->set_timestamp(time * 1000ULL);
+
+		logger->write(std::move(message));
+		write_cnt.fetch_add(1);
+	}
+	std::cout << "write CAN2  " << write_cnt << " frame." << std::endl;
+
+	id = 0x125;
+	write_cnt = 0;
+	for (int i = 0; i < 100; i++)
 	{
 		next += period;
 
@@ -99,6 +128,7 @@ int main()
 		logger->write(std::move(message));
 		write_cnt.fetch_add(1);
 	}
+	std::cout << "write CANFD  " << write_cnt << " frame." << std::endl;
 
 	is_running.store(false);
 	if (tid.joinable())

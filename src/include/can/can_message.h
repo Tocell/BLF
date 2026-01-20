@@ -1,6 +1,5 @@
 #ifndef CAN_MESSAGE_H
 #define CAN_MESSAGE_H
-#include "bus_message.h"
 #include "can_object.h"
 #include "message_factory.h"
 
@@ -10,7 +9,7 @@ namespace GWLogger
 class GWLOGGER_API CanMessage : public BusMessage
 {
 public:
-	explicit CanMessage(const CanFrame& frame_data);
+	explicit CanMessage(const CanFrame& frame);
 	~CanMessage() override;
 
 	[[nodiscard]] BusType get_bus_type() const override;

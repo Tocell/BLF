@@ -1,8 +1,6 @@
 #ifndef CAN_MESSAGE_BLF_READER_H
 #define CAN_MESSAGE_BLF_READER_H
 #include "imessage_reader.h"
-#include "blf_object_header.h"
-#include "file_reader.h"
 
 namespace GWLogger::Blf
 {

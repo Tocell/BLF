@@ -211,6 +211,7 @@ enum class BusType {
 	CAN,
 	CAN2,
 	CAN_FD,
+	CAN_FD64,
 	LIN,
 	FLEXRAY,
 	ETHERNET
