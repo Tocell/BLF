@@ -93,7 +93,7 @@ struct CanDriverErrFrame
 	uint32_t error_code;
 };
 
-struct CanDriverErrorExtFrame
+struct CanDriverErrExtFrame
 {
 	uint16_t channel;
 	uint8_t tx_errors;
@@ -106,7 +106,7 @@ struct CanDriverErrorExtFrame
 	uint32_t reserved3[4];
 };
 
-struct CanDriverHwSync
+struct CanDriverSyncFrame
 {
 	uint16_t channel;
 	uint8_t flags;
@@ -114,7 +114,7 @@ struct CanDriverHwSync
 	uint32_t reserved2;
 };
 
-struct CanDriverStatistic
+struct CanDriverStatisticFrame
 {
 	uint16_t channel;
 	uint16_t busLoad;
@@ -127,14 +127,14 @@ struct CanDriverStatistic
 	uint32_t reserved_can_driver_statistic;
 };
 
-struct CanErrorFrame
+struct CanErrFrame
 {
 	uint16_t channel;
 	uint16_t length;
 	uint32_t reserved;
 };
 
-struct CanErrorFrameExt
+struct CanErrExtFrame
 {
 	uint16_t channel;
 	uint16_t length;
@@ -150,7 +150,7 @@ struct CanErrorFrameExt
 	uint8_t data[8];
 };
 
-struct CanFdErrorFrame64
+struct CanFdErr64Frame
 {
 	uint8_t channel;
 	uint8_t dlc;
@@ -181,7 +181,7 @@ struct CanOverloadFrame
 	uint32_t reserved2;
 };
 
-struct CanSettingChanged
+struct CanSettingChangedFrame
 {
 	uint16_t channel;
 	uint8_t change_type;

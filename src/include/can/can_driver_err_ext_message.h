@@ -9,7 +9,7 @@ namespace GWLogger
 class GWLOGGER_API CanDriverErrExtMessage : public BusMessage
 {
 public:
-	explicit CanDriverErrExtMessage(const CanDriverErrorExtFrame& frame);
+	explicit CanDriverErrExtMessage(const CanDriverErrExtFrame& frame);
 	~CanDriverErrExtMessage() override;
 
 	[[nodiscard]] BusType get_bus_type() const override;
@@ -18,7 +18,7 @@ public:
 
 	void set_timestamp(uint64_t timestamp) override;
 
-	[[nodiscard]] const CanDriverErrorExtFrame& get_frame() const;
+	[[nodiscard]] const CanDriverErrExtFrame& get_frame() const;
 
 private:
 	struct Impl;
@@ -26,7 +26,7 @@ private:
 };
 
 template <>
-struct MessageType<CanDriverErrorExtFrame> { using type = CanDriverErrExtMessage; };
+struct MessageType<CanDriverErrExtFrame> { using type = CanDriverErrExtMessage; };
 
 }
 

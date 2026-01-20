@@ -5,12 +5,12 @@ namespace GWLogger
 
 struct GWLOGGER_API CanDriverErrExtMessage::Impl
 {
-	CanDriverErrorExtFrame frame_{};
+	CanDriverErrExtFrame frame_{};
 
 	uint64_t timestamp_{};
 };
 
-CanDriverErrExtMessage::CanDriverErrExtMessage(const CanDriverErrorExtFrame& frame_data)
+CanDriverErrExtMessage::CanDriverErrExtMessage(const CanDriverErrExtFrame& frame_data)
 	: impl(std::make_unique<Impl>())
 {
 	impl->frame_ = frame_data;
@@ -33,7 +33,7 @@ void CanDriverErrExtMessage::set_timestamp(uint64_t timestamp)
 	impl->timestamp_ = timestamp;
 }
 
-GWLOGGER_API const CanDriverErrorExtFrame& CanDriverErrExtMessage::get_frame() const
+GWLOGGER_API const CanDriverErrExtFrame& CanDriverErrExtMessage::get_frame() const
 {
 	return impl->frame_;
 }
