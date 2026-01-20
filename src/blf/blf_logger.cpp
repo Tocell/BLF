@@ -6,6 +6,7 @@
 #include "message_factory.h"
 #include "imessage_reader.h"
 #include "blf_reader_registry.h"
+#include "writer_registry.h"
 #include "zlib.h"
 
 namespace GWLogger::Blf

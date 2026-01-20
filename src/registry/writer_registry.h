@@ -2,12 +2,6 @@
 #define WRITER_REGISTRY_H
 
 #include <functional>
-#include <map>
-#include <unordered_map>
-#include <memory>
-
-#include "imessage_writer.h"
-#include "bus_message.h"
 
 namespace GWLogger
 {
@@ -27,7 +21,7 @@ public:
 
 	void register_writer(FileFormat format, BusType bus_type, WriterFactory factory);
 
-	const WriterFactory* find_writer(FileFormat format, BusType bus_type) const;
+	[[nodiscard]] const WriterFactory* find_writer(FileFormat format, BusType bus_type) const;
 
 private:
 	WriterRegistry() = default;

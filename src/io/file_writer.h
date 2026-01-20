@@ -1,12 +1,11 @@
 #ifndef FILE_H
 #define FILE_H
-
 #include <string>
 #include <fstream>
 #include <cstdint>
 #include <array>
 
-#include "blf_object_header.h"
+#include "internal_define.h"
 
 namespace GWLogger
 {

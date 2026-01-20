@@ -1,0 +1,1 @@
+#include "can_statistic_message.h"

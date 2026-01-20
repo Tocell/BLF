@@ -1,5 +1,6 @@
 #include "can_message2_blf_writer.h"
 #include "can_message2.h"
+#include "writer_registrar.h"
 
 namespace GWLogger::Blf
 {

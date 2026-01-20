@@ -2,10 +2,12 @@
 #include "logger.h"
 #include "bus_message.h"
 #include "can_object.h"
+#include "message_factory.h"
+
 #include "can_message.h"
 #include "can_message2.h"
 #include "canfd_message.h"
-#include "message_factory.h"
+#include "canfd_message64.h"
 
 #include <chrono>
 #include <thread>
@@ -73,6 +75,22 @@ int main()
 				   ++cnt, (unsigned long long)ts, f.channel, f.id, f.dlc);
 			for (int i = 0; i < f.dlc && i < 8; ++i)
 				printf("%02X ", f.data[i]);
+			printf("\n");
+		}
+		else if (type == GWLogger::BusType::CAN_FD64)
+		{
+			auto* can = dynamic_cast<GWLogger::CanFdMessage64*>(msg.get());
+			if (!can) continue;
+
+			const GWLogger::CanFdFrame64& f = can->get_frame();
+			const int data_len = (f.valid_data_bytes > 64) ? 64 : (int)f.valid_data_bytes;
+
+			printf("[CANFD64] %d ts=%llu ch=%u id=0x%X dlc=%u valid=%u data=",
+				   ++cnt, (unsigned long long)ts,
+				   (unsigned)f.channel, (unsigned)f.id,
+				   (unsigned)f.dlc, (unsigned)f.valid_data_bytes);
+
+			for (int i = 0; i < data_len; ++i) printf("%02X ", f.data[i]);
 			printf("\n");
 		}
 	}

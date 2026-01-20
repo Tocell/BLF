@@ -1,6 +1,5 @@
 #ifndef CAN_MESSAGE2_H
 #define CAN_MESSAGE2_H
-#include "bus_message.h"
 #include "can_object.h"
 #include "message_factory.h"
 

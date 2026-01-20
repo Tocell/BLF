@@ -11,8 +11,6 @@
 #include <queue>
 #include <condition_variable>
 
-#define MAX_FRAME_CACHE_COUNT (300 * 1000)
-
 namespace GWLogger::Asc
 {
 class AscLogger : public Logger

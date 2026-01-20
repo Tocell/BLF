@@ -1,0 +1,4 @@
+#ifndef CAN_ERROR_MESSAGE_H
+#define CAN_ERROR_MESSAGE_H
+
+#endif //CAN_ERROR_MESSAGE_H

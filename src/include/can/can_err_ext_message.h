@@ -1,0 +1,4 @@
+#ifndef CAN_ERR_ETX_MESSAGE_H
+#define CAN_ERR_ETX_MESSAGE_H
+
+#endif //CAN_ERR_ETX_MESSAGE_H

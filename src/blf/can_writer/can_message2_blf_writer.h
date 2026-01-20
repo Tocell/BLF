@@ -1,8 +1,7 @@
 #ifndef CAN_MESSAGE2_BLF_WRITER_H
 #define CAN_MESSAGE2_BLF_WRITER_H
 #include "imessage_writer.h"
-#include "writer_registrar.h"
-#include "file_writer.h"
+#include "blf_object_header.h"
 
 namespace GWLogger::Blf
 {

@@ -7,12 +7,11 @@ namespace GWLogger::Blf
 
 static WriterRegistrar<CanFdMessage64BlfWriter> registrar(FileFormat::BLF, BusType::CAN_FD64);
 
-
 CanFdMessage64BlfWriter::CanFdMessage64BlfWriter()
 {
 	header_base_.signature = BL_OBJ_SIGNATURE;
 	header_base_.header_size = sizeof(ObjectHeaderBase) + sizeof(ObjectHeader);
-	header_base_.object_size = sizeof(ObjectHeaderBase) + sizeof(ObjectHeader) + sizeof(CanFdMessage64);
+	header_base_.object_size = sizeof(ObjectHeaderBase) + sizeof(ObjectHeader) + sizeof(CanFdFrame64);
 	header_base_.object_type = BL_OBJ_TYPE_CAN_FD_MESSAGE_64;
 	header_base_.header_version = 1;
 
@@ -45,7 +44,7 @@ bool CanFdMessage64BlfWriter::write(const BusMessage& msg, FileWriter& writer)
 
 	writer.append(reinterpret_cast<const uint8_t*>(&header_base_), sizeof(ObjectHeaderBase));
 	writer.append(reinterpret_cast<const uint8_t*>(&header_), sizeof(ObjectHeader));
-	writer.append(reinterpret_cast<const uint8_t*>(&frame), sizeof(CanFdMessage64));
+	writer.append(reinterpret_cast<const uint8_t*>(&frame), sizeof(CanFdFrame64));
 
 	return true;
 }

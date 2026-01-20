@@ -1,12 +1,11 @@
 #include "can_message_blf_writer.h"
 #include "can_message.h"
-#include "blf_reader_registrar.h"
+#include "writer_registrar.h"
 
 namespace GWLogger::Blf
 {
 
 static WriterRegistrar<CanMessageBlfWriter> registrar(FileFormat::BLF, BusType::CAN);
-
 
 CanMessageBlfWriter::CanMessageBlfWriter()
 {

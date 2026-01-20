@@ -2,7 +2,6 @@
 #define LOGGER_REGISTRY_H
 #include <functional>
 #include <map>
-#include <memory>
 
 #include "logger.h"
 

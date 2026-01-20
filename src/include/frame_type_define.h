@@ -198,8 +198,6 @@ namespace GWLogger
 #define BL_OBJ_FLAG_TIME_TEN_MICS				0x00000001 /* 10 micro second timestamp */
 #define BL_OBJ_FLAG_TIME_ONE_NANS				0x00000002 /* 1 nano second timestamp */
 
-#define BUFFER_MAX_SIZE							(4 * 1024 * 1024)
-
 enum class FileFormat {
 	BLF,
 	ASC,
@@ -212,6 +210,16 @@ enum class BusType {
 	CAN2,
 	CAN_FD,
 	CAN_FD64,
+	CAN_DRIVER_ERR_EXT,
+	CAN_DRIVER_ERR,
+	CAN_DRIVER_SYNC,
+	CAN_ERR_EXT,
+	CAN_ERR,
+	CAN_OVERLOAD,
+	CAN_SETTING_CHANGE,
+	CAN_STATISTIC,
+	CAN_ERR64,
+
 	LIN,
 	FLEXRAY,
 	ETHERNET

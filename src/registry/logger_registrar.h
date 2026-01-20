@@ -1,7 +1,7 @@
 #ifndef LOGGER_REGISTRAR_H
 #define LOGGER_REGISTRAR_H
-
 #include "logger_registry.h"
+
 namespace GWLogger
 {
 

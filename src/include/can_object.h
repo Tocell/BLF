@@ -85,7 +85,7 @@ struct CanFdFrame64
 	uint8_t data[64];
 };
 
-struct CanDriverError
+struct CanDriverErrFrame
 {
 	uint16_t channel;
 	uint8_t tx_errors;
@@ -93,7 +93,7 @@ struct CanDriverError
 	uint32_t error_code;
 };
 
-struct CanDriverErrorExt
+struct CanDriverErrorExtFrame
 {
 	uint16_t channel;
 	uint8_t tx_errors;

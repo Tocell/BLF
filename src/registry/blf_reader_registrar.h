@@ -1,6 +1,5 @@
 #ifndef READER_REGISTRAR_H
 #define READER_REGISTRAR_H
-
 #include "blf_reader_registry.h"
 
 namespace GWLogger::Blf

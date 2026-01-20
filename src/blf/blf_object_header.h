@@ -4,7 +4,8 @@
 #include <cstdint>
 #include <ios>
 #include "can_object.h"
-#include "frame_type_define.h"
+// #include "frame_type_define.h"
+#include "internal_define.h"
 
 namespace GWLogger::Blf
 {

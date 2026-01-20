@@ -1,7 +1,4 @@
 #include "can_message2.h"
-#include "can_object.h"
-#include "blf_object_header.h"
-#include "blf_reader_registrar.h"
 
 namespace GWLogger
 {

@@ -1,14 +1,11 @@
 #include "asc_logger.h"
-#include "can_message_asc_writer.h"
 #include "writer_registry.h"
-#include "imessage_reader.h"
 #include <chrono>
 #include <ctime>
 #include <iomanip>
 #include <sstream>
 
-#include "../api/iasc_message_reader.h"
-#include "../registry/asc_reader_registrar.h"
+#include "asc_reader_registrar.h"
 
 namespace GWLogger::Asc
 {
@@ -491,10 +488,10 @@ void AscLogger::reader_thread_handler()
 			std::unique_lock lock(msg_mtx_);
 			msg_cv_.wait_for(lock, kWakeInterval, [this]()
 			{
-				return msg_queue_.size() < 300 * 1000 || !is_running_.load();
+				return msg_queue_.size() < MAX_FRAME_CACHE_COUNT || !is_running_.load();
 			});
 			if (!is_running_.load() || file_eof_.load()) break;
-			if (msg_queue_.size() >= 300 * 1000) continue;
+			if (msg_queue_.size() >= MAX_FRAME_CACHE_COUNT) continue;
 		}
 		if (!file_reader_.read_line(line))
 		{

@@ -6,18 +6,14 @@
 #include "logger_registrar.h"
 #include "file_statistics_handler.h"
 #include "log_container_handler.h"
+#include "file_reader.h"
 
-#include <map>
 #include <thread>
 #include <mutex>
 #include <condition_variable>
 #include <atomic>
 #include <queue>
 #include <vector>
-
-#include "file_reader.h"
-
-#define MAX_FRAME_CACHE_COUNT (300 * 1000)
 
 namespace GWLogger::Blf
 {

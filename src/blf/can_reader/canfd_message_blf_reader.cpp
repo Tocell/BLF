@@ -1,5 +1,4 @@
 #include "canfd_message_blf_reader.h"
-
 #include "blf_object_header.h"
 #include "blf_reader_registrar.h"
 #include "canfd_message.h"

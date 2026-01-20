@@ -1,8 +1,5 @@
 #ifndef CANFD_MESSAGE_H
 #define CANFD_MESSAGE_H
-#include <memory>
-
-#include "bus_message.h"
 #include "can_object.h"
 #include "message_factory.h"
 

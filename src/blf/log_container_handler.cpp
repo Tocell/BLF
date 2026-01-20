@@ -1,4 +1,5 @@
 #include "log_container_handler.h"
+#include "frame_type_define.h"
 #include "zlib.h"
 #include <iostream>
 
