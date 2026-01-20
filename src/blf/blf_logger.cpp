@@ -463,7 +463,7 @@ void BlfLogger::read_busmsg_thread_handler()
 
                 if (msg)
                 {
-                    // ===== 时间戳还原（核心）=====
+                    // ===== 时间戳还原 =====
                     if (base.header_version == 1 &&
                         base.header_size >= sizeof(ObjectHeaderBase) +
                                              sizeof(ObjectHeader))
@@ -502,7 +502,8 @@ IMessageWriter* BlfLogger::create_writer(BusType bus_type)
 
 	// 再从 registry 查 factory
 	const auto* fac = WriterRegistry::get_instance().find_writer(FileFormat::BLF, bus_type);
-	if (!fac) return nullptr;
+	if (!fac)
+		return nullptr;
 
 	auto [it, inserted] = writer_.emplace(bus_type, std::move((*fac)()));
 	return it->second.get();

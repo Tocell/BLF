@@ -16,7 +16,7 @@ namespace BLF
 struct ObjectHeaderBase {
 	uint32_t signature;        ///< Always 0x4A424F4C ('LOBJ')
 	uint16_t header_size;      ///< Size of the complete header
-	uint16_t header_version;   ///< Header version (1 or 2)
+	uint16_t header_version;   ///< Header version (1 or 2)  1：ObjectHeader  2：ObjectHeader2
 	uint32_t object_size;      ///< Size of entire object including header
 	uint32_t object_type;      ///< Type of object (see object_type_define.h)
 };
