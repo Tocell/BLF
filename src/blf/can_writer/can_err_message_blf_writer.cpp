@@ -30,7 +30,7 @@ bool CanErrMessageBlfWriter::write(const BusMessage& msg, FileWriter& writer)
 {
     const auto& can_msg = dynamic_cast<const CanErrMessage&>(msg);
 
-    const CanErrFrame& can_frame = can_msg.get_frame();
+    const auto& can_frame = can_msg.get_frame();
 
     if (BL_OBJ_FLAG_TIME_ONE_NANS == header_.time_flags)
     {
