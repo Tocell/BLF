@@ -3,11 +3,30 @@
 #include <memory>
 #include <functional>
 #include <unordered_map>
+#include <vector>
+#include <string>
+#include <cctype>
 
 #include "iasc_message_reader.h"
 
 namespace GWLogger::Asc
 {
+
+enum class AscLineKey : uint32_t {
+    Unknown = 0,
+    CanClassic,
+    CanFd,
+    // CanError,
+    // CanStatistic,
+    // CanOverload,
+    // ...
+};
+
+struct AscLineKeyHash {
+    size_t operator()(AscLineKey k) const noexcept {
+        return static_cast<size_t>(k);
+    }
+};
 
 using AscReaderFactory = std::function<std::unique_ptr<IAscMessageReader>()>;
 
@@ -20,29 +39,78 @@ public:
         return inst;
     }
 
-    void registry_reader(uint32_t key, AscReaderFactory f)
+    void registry_reader(AscLineKey key, AscReaderFactory f)
     {
-        registry_[key] = std::move(f);
+        registry_[key].push_back(std::move(f));
     }
 
-    IAscMessageReader* find_reader(
-        uint32_t key,
-        std::unordered_map<uint32_t, std::unique_ptr<IAscMessageReader>>& cache) const
+    static inline std::vector<std::string> split_ws(const std::string& s)
     {
-        if (auto itc = cache.find(key); itc != cache.end())
-            return itc->second.get();
+        std::vector<std::string> out;
+        std::string cur;
+        for (unsigned char ch : s)
+        {
+            if (std::isspace(ch))
+            {
+                if (!cur.empty()) { out.push_back(cur); cur.clear(); }
+            }
+            else cur.push_back(static_cast<char>(ch));
+        }
+        if (!cur.empty()) out.push_back(cur);
+        return out;
+    }
 
-        // 再查 registry
-        auto itr = registry_.find(key);
-        if (itr == registry_.end())
-            return nullptr;
+    static inline AscLineKey asc_extract_key(const std::string& line)
+    {
+        // 跳过空行/注释
+        if (line.empty()) return AscLineKey::Unknown;
+        if (line.size() >= 2 && line[0] == '/' && line[1] == '/') return AscLineKey::Unknown;
 
-        auto [it, inserted] = cache.emplace(key, itr->second());
-        return it->second.get();
+        auto t = split_ws(line);
+        if (t.size() < 2) return AscLineKey::Unknown;
+
+        // CANFD: <Time> CANFD ...
+        if (t[1] == "CANFD") return AscLineKey::CanFd;
+
+        // Classic CAN: <Time> <Ch> <ID> <Dir> <d/r> ...
+        if (t.size() >= 5 &&
+            (t[3] == "Tx" || t[3] == "Rx" || t[3] == "TxRq") &&
+            (t[4] == "d"  || t[4] == "r"))
+            return AscLineKey::CanClassic;
+
+        return AscLineKey::Unknown;
+    }
+
+
+    IAscMessageReader* find_reader(
+        const std::string& line,
+        std::unordered_map<AscLineKey,
+            std::vector<std::unique_ptr<IAscMessageReader>>,
+            AscLineKeyHash>& cache) const
+    {
+        AscLineKey key = asc_extract_key(line);
+        if (key == AscLineKey::Unknown) return nullptr;
+
+        // 先查 cache：该 key 已经实例化过 reader
+        auto& vec = cache[key];
+        if (!vec.empty())
+            return vec.front().get();
+
+        // 再查 registry：创建 reader 实例放入 cache
+        auto it = registry_.find(key);
+        if (it == registry_.end()) return nullptr;
+
+        for (auto& fac : it->second)
+        {
+            vec.push_back(fac());
+            if (vec.back()->match(line))
+                return vec.back().get();
+        }
+        return nullptr;
     }
 
 private:
-    std::unordered_map<uint32_t, AscReaderFactory> registry_;
+    std::unordered_map<AscLineKey, std::vector<AscReaderFactory>, AscLineKeyHash> registry_;
 };
 
 }

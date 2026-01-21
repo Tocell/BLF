@@ -9,8 +9,9 @@ namespace GWLogger::Asc
 template<typename T>
 class AscReaderRegistrar {
 public:
-    AscReaderRegistrar() {
-        AscReaderRegistry::instance().registry_reader(T::kKey, []{
+    explicit AscReaderRegistrar(AscLineKey key)
+    {
+        AscReaderRegistry::instance().registry_reader(key, []{
             return std::make_unique<T>();
         });
     }

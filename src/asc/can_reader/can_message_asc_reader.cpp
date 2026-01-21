@@ -12,12 +12,12 @@
 namespace GWLogger::Asc
 {
 
-static AscReaderRegistrar<CanMessageAscReader> reg_can;
+static AscReaderRegistrar<CanMessageAscReader>   reg_can(AscLineKey::CanClassic);
 
-uint32_t CanMessageAscReader::key() const
-{
-    return kKey;
-}
+// uint32_t CanMessageAscReader::key() const
+// {
+//     return kKey;
+// }
 
 static inline std::vector<std::string> split_ws(const std::string& s)
 {
@@ -316,5 +316,42 @@ BusMessagePtr CanMessageAscReader::read_line(const std::string& line,
     msg->set_timestamp(posix_us);
     return msg;
 }
+
+bool CanMessageAscReader::match(const std::string& line) const
+{
+    auto t = AscReaderRegistry::split_ws(line);
+    // classic CAN: <Time> <Ch> <ID> <Dir> <d/r> <DLC> ...
+    if (t.size() < 6) return false;
+
+    // 第2列必须是 channel 数字
+    // （如果是 CANFD 行，t[1] 会是 "CANFD"，这里会直接失败）
+    int ch = 0;
+    {
+        const char* b = t[1].data();
+        const char* e = t[1].data() + t[1].size();
+        auto r = std::from_chars(b, e, ch, 10);
+        if (r.ec != std::errc{} || r.ptr != e) return false;
+    }
+
+    // 第4列 Tx/Rx/TxRq，第5列 d/r
+    if (!(t[3] == "Tx" || t[3] == "Rx" || t[3] == "TxRq")) return false;
+    if (!(t[4] == "d"  || t[4] == "r")) return false;
+
+    // DLC 必须是十进制 0..8（classic CAN）
+    int dlc = 0;
+    {
+        const char* b = t[5].data();
+        const char* e = t[5].data() + t[5].size();
+        auto r = std::from_chars(b, e, dlc, 10);
+        if (r.ec != std::errc{} || r.ptr != e) return false;
+        if (dlc < 0 || dlc > 8) return false;
+    }
+
+    // data frame 至少要有 dlc 个字节
+    if (t[4] == "d" && static_cast<int>(t.size()) < 6 + dlc) return false;
+
+    return true;
+}
+
 
 }

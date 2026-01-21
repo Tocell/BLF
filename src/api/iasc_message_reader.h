@@ -12,9 +12,11 @@ class IAscMessageReader
 public:
     virtual ~IAscMessageReader() = default;
 
-    [[nodiscard]] virtual uint32_t key() const = 0;
+    // [[nodiscard]] virtual uint32_t key() const = 0;
 
     [[nodiscard]] virtual BusMessagePtr read_line(const std::string& line, uint64_t file_start_time) const = 0;
+
+    [[nodiscard]] virtual bool match(const std::string& line) const = 0;
 };
 
 }

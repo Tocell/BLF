@@ -1,6 +1,7 @@
 #ifndef IMESSAGE_READER_H
 #define IMESSAGE_READER_H
 #include "message_factory.h"
+#include <string>
 
 namespace GWLogger
 {

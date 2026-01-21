@@ -12,12 +12,12 @@
 namespace GWLogger::Asc
 {
 
-static AscReaderRegistrar<CanFdMessageAscReader> reg_can;
+static AscReaderRegistrar<CanFdMessageAscReader> reg_canfd(AscLineKey::CanFd);
 
-uint32_t CanFdMessageAscReader::key() const
-{
-    return kKey;
-}
+// uint32_t CanFdMessageAscReader::key() const
+// {
+//     return kKey;
+// }
 
 static inline std::vector<std::string> split_ws(const std::string& s)
 {
@@ -292,6 +292,54 @@ BusMessagePtr CanFdMessageAscReader::read_line(const std::string& line,
     }
 
     return nullptr;
+}
+
+bool CanFdMessageAscReader::match(const std::string& line) const
+{
+    auto t = AscReaderRegistry::split_ws(line);
+
+    // <Time> CANFD <Ch> <Dir> <ID> <Sym> <BRS> <ESI> <DLC> <DataLength> ...
+    if (t.size() < 10) return false;
+    if (t[1] != "CANFD") return false;
+
+    // channel 必须是十进制
+    int ch = 0;
+    {
+        const char* b = t[2].data();
+        const char* e = t[2].data() + t[2].size();
+        auto r = std::from_chars(b, e, ch, 10);
+        if (r.ec != std::errc{} || r.ptr != e) return false;
+        if (ch < 0 || ch > 0xFFFF) return false;
+    }
+
+    // dir
+    if (!(t[3] == "Tx" || t[3] == "Rx" || t[3] == "TxRq")) return false;
+
+    // DLC：你 writer 输出的是 hex (0..F)
+    uint32_t dlc_u32 = 0;
+    {
+        // strtoul 更好处理 A/F 这种
+        char* endp = nullptr;
+        unsigned long v = std::strtoul(t[8].c_str(), &endp, 16);
+        if (endp == t[8].c_str() || *endp != '\0') return false;
+        if (v > 15) return false;
+        dlc_u32 = static_cast<uint32_t>(v);
+    }
+
+    // DataLength：十进制 0..64
+    int data_len = 0;
+    {
+        const char* b = t[9].data();
+        const char* e = t[9].data() + t[9].size();
+        auto r = std::from_chars(b, e, data_len, 10);
+        if (r.ec != std::errc{} || r.ptr != e) return false;
+        if (data_len < 0 || data_len > 64) return false;
+    }
+
+    // data bytes 至少要有 data_len 个
+    if (static_cast<int>(t.size()) < 10 + data_len) return false;
+
+    return true;
 }
 
 
