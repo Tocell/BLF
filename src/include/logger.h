@@ -28,7 +28,7 @@ public:
     // 设置 blf 格式压缩级别，默认为 6
     virtual void set_compres_level(int32_t compres_level) = 0;
     // 设置时间戳单位
-    virtual void set_timestamp_unit(int32_t unit) = 0;
+    virtual void set_timestamp_unit(TimeStampUnit unit) = 0;
     // 写入接口
     virtual bool write(BusMessagePtr msg) = 0;
 

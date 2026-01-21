@@ -1,0 +1,9 @@
+#ifndef CAN_STATISTIC_MESSAGE_ASC_WRITER_H
+#define CAN_STATISTIC_MESSAGE_ASC_WRITER_H
+
+class CanStatisticMessageAscWriter
+{
+
+};
+
+#endif //CAN_STATISTIC_MESSAGE_ASC_WRITER_H

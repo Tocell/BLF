@@ -17,9 +17,9 @@ CanMessageAscWriter::CanMessageAscWriter():
 {
 }
 
-void CanMessageAscWriter::set_timestamp_unit(int32_t unit)
+void CanMessageAscWriter::set_timestamp_unit(TimeStampUnit unit)
 {
-	timestamp_unit_ = unit;
+	timestamp_unit_ = static_cast<uint32_t>(unit);
 }
 
 
@@ -36,8 +36,6 @@ static inline bool asc_is_extended_id(uint32_t id)
 	return id > 0x7FFu;
 }
 
-// 生成一行 Classic CAN ASC（基础版）
-// 返回值：拼好的行（包含 "\r\n"）
 static inline std::string build_canframe_asc_line(
 	const CanFrame& f,
 	uint64_t msg_timestamp_us,      // 绝对时间戳(us)
@@ -91,13 +89,92 @@ static inline std::string build_canframe_asc_line(
 	return oss.str();
 }
 
+// v7.5
+// <Time> <Channel> <ID> <Dir> d <DLC> <D0> <D1>...<D8> Length =
+// <MessageDuration> BitCount = <MessageLength> <MessageFlags>
+static inline std::string build_can_asc_line_full(
+    const CanFrame& f,
+    uint64_t msg_timestamp_us,      // 消息时间戳(us)
+    uint64_t file_start_time_us,    // 文件起始时间戳(us)
+    bool timestamps_absolute        // false: 相对；true: 绝对
+)
+{
+    // <Time> 单位：秒
+    double t_sec = 0.0;
+    if (timestamps_absolute) {
+        t_sec = static_cast<double>(msg_timestamp_us) / 1e6;
+    } else {
+        const uint64_t base = std::min(msg_timestamp_us, file_start_time_us);
+        t_sec = static_cast<double>(msg_timestamp_us - base) / 1e6;
+    }
+
+    // Type：Classic CAN 用 d/r
+    const bool is_rtr = (f.flags & 0x80u) != 0; // 你 Flags 里 RTR=(1<<7)
+    const char* type = is_rtr ? "r" : "d";
+
+    // DataLength：classic CAN 就等于 dlc（0..8）
+    const int dlc = std::clamp<int>(static_cast<int>(f.dlc), 0, 8);
+    const int data_len = is_rtr ? 0 : dlc;
+
+    // MessageDuration / MessageLength：CanFrame 没有，先写 0（Vector 很多字段允许 0）
+    const uint32_t msg_duration_ns = 0;
+    const uint32_t msg_length_bits = 0;
+
+    // Flags：给一个最小可用的 classic CAN flags（你没提供 Vector flags 体系，就保守输出 0）
+    // 如果你后续要做得更真，可以映射：Tx/Rx、RTR、IDE 等到 Vector 的 flags bit。
+    const uint32_t flags = 0;
+
+    std::ostringstream oss;
+    oss.setf(std::ios::fixed);
+    oss << std::setprecision(6);
+
+    // <Time> <Channel> <ID> <Dir> <Type> <DLC> <DataLength> <Data...> <MsgDuration> <MsgLength> <Flags>
+    oss << t_sec << ' '
+        << f.channel << ' ';
+
+    // ID：hex，扩展帧加 'x'
+    oss << std::hex << std::uppercase;
+    if (asc_is_extended_id(f.id)) {
+        oss << (f.id & 0x1FFFFFFFu) << 'x';
+    } else {
+        oss << (f.id & 0x7FFu);
+    }
+    oss << std::dec;
+
+    // Dir
+    oss << ' ' << asc_dir_from_flags(f.flags);
+
+    // Type + DLC + DataLength
+    oss << ' ' << type
+        << ' ' << dlc
+        << ' ' << data_len;
+
+    // Data bytes（仅 data frame 输出）
+    if (!is_rtr)
+    {
+        oss << std::hex << std::uppercase << std::setfill('0');
+        for (int i = 0; i < dlc; ++i)
+            oss << ' ' << std::setw(2) << static_cast<int>(f.data[i]);
+        oss << std::dec;
+    }
+
+    // 结尾统计字段
+    oss << ' ' << msg_duration_ns
+        << ' ' << msg_length_bits
+        << ' ' << std::hex << std::uppercase << flags
+        << "\r\n";
+
+    return oss.str();
+}
+
+
 bool CanMessageAscWriter::write(const BusMessage& msg, FileWriter& writer)
 {
 	const auto& can_msg = dynamic_cast<const CanMessage&>(msg);
 
-	const CanFrame& can_frame = can_msg.get_frame();
+	const auto& can_frame = can_msg.get_frame();
 
-	auto line_msg = build_canframe_asc_line(
+	auto line_msg = build_can_asc_line_full(
 		can_frame,
 		can_msg.get_timestamp(),
 		writer.get_file_start_time(),

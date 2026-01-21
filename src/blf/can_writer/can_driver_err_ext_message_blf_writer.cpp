@@ -21,9 +21,9 @@ CanDriverErrExtMessageBlfWriter::CanDriverErrExtMessageBlfWriter()
 	header_.time_flags = BL_OBJ_FLAG_TIME_ONE_NANS;
 }
 
-void CanDriverErrExtMessageBlfWriter::set_timestamp_unit(int32_t unit)
+void CanDriverErrExtMessageBlfWriter::set_timestamp_unit(TimeStampUnit unit)
 {
-	header_.time_flags = unit;
+	header_.time_flags = static_cast<uint32_t>(unit);
 }
 
 bool CanDriverErrExtMessageBlfWriter::write(const BusMessage& msg, FileWriter& writer)

@@ -3,6 +3,7 @@
 #include "bus_message.h"
 #include "can_object.h"
 #include "message_factory.h"
+#include "frame_type_define.h"
 
 #include "can_message.h"
 #include "can_message2.h"
@@ -34,6 +35,7 @@ int main()
 	}
 
 	logger->set_compres_level(6);
+	logger->set_timestamp_unit(GWLogger::TimeStampUnit::BLF_TIME_ONE_NANS);
 
 	auto next = std::chrono::steady_clock::now();
 	constexpr auto period = std::chrono::microseconds(10);

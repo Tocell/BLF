@@ -119,11 +119,13 @@ bool AscLogger::write(BusMessagePtr msg)
 	return true;
 }
 
-
-
-void AscLogger::set_timestamp_unit(int32_t unit)
+	
+void AscLogger::set_timestamp_unit(TimeStampUnit unit)
 {
-
+	for (auto& it : writer_)
+	{
+		it.second->set_timestamp_unit(unit);
+	}
 }
 
 void AscLogger::get_measure_time(uint64_t& start_time, uint64_t& stop_time)

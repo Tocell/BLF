@@ -198,6 +198,19 @@ namespace GWLogger
 #define BL_OBJ_FLAG_TIME_TEN_MICS				0x00000001 /* 10 micro second timestamp */
 #define BL_OBJ_FLAG_TIME_ONE_NANS				0x00000002 /* 1 nano second timestamp */
 
+// #define ASC_RELATIVE_TIME						0x00000003 /* 10 micro second timestamp */
+// #define ASC_ABSOLUTE_TIME						0x00000004 /* 1 nano second timestamp */
+
+enum class TimeStampUnit
+{
+	BLF_TIME_TEN_MICS,			// 用于 blf 时间戳单位为 10us
+	BLF_TIME_ONE_NANS,			// 用于 blf 时间戳单位为 1na
+
+	ASC_RELATIVE_TIME,			// 用于 asc 使用相对时间戳 单位 us
+	ASC_ABSOLUTE_TIME			// 用于 asc 使用绝对时间戳 单位 us
+};
+
+
 enum class FileFormat {
 	BLF,
 	ASC,
@@ -230,8 +243,7 @@ enum class OpenMode {
 	Write
 };
 
-#define TIME_TEN_MICS     0x00000001 /* 10 micro second timestamp */
-#define TIME_ONE_NANS     0x00000002 /* 1 nano second timestamp */
+
 
 }
 

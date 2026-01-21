@@ -27,7 +27,7 @@ public:
 	[[nodiscard]] uint64_t get_file_size() const override;
 
 	void set_compres_level(int32_t compres_level) override { };
-	void set_timestamp_unit(int32_t unit) override;
+	void set_timestamp_unit(TimeStampUnit unit) override;
 
 	bool write(BusMessagePtr msg) override;
 	bool read(BusMessagePtr& msg) override;

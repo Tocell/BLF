@@ -21,9 +21,9 @@ CanFdErr64MessageBlfWriter::CanFdErr64MessageBlfWriter()
     header_.time_flags = BL_OBJ_FLAG_TIME_ONE_NANS;
 }
 
-void CanFdErr64MessageBlfWriter::set_timestamp_unit(int32_t unit)
+void CanFdErr64MessageBlfWriter::set_timestamp_unit(TimeStampUnit unit)
 {
-    header_.time_flags = unit;
+    header_.time_flags = static_cast<uint32_t>(unit);
 }
 
 bool CanFdErr64MessageBlfWriter::write(const BusMessage& msg, FileWriter& writer)

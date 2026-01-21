@@ -13,7 +13,7 @@ public:
 
 	[[nodiscard]] virtual bool write(const BusMessage& msg, FileWriter& writer) = 0;
 
-	virtual void set_timestamp_unit(int32_t unit) = 0;
+	virtual void set_timestamp_unit(TimeStampUnit unit) = 0;
 };
 }
 

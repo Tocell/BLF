@@ -1,0 +1,9 @@
+#ifndef CAN_OVERLOAD_MESSAGE_ASC_WRITER_H
+#define CAN_OVERLOAD_MESSAGE_ASC_WRITER_H
+
+class CanOverloadMessageAscWriter
+{
+
+};
+
+#endif //CAN_OVERLOAD_MESSAGE_ASC_WRITER_H

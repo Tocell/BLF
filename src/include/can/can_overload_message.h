@@ -26,7 +26,7 @@ private:
 
 // 工厂模式显示特化
 template <>
-struct MessageType<CanFrame> { using type = CanOverloadMessage; };
+struct MessageType<CanOverloadFrame> { using type = CanOverloadMessage; };
 
 }
 #endif //CAN_OVERLOAD_MESSAGE_H

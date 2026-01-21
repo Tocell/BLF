@@ -35,7 +35,7 @@ public:
 	void flush_logcontainer(LogContainer& log_container);
 
 	void set_compres_level(int32_t compres_level) override;
-	void set_timestamp_unit(int32_t unit) override;
+	void set_timestamp_unit(TimeStampUnit unit) override;
 
 	bool read(BusMessagePtr& msg) override;
 
@@ -57,7 +57,6 @@ private:
 	};
 
 private:
-	// std::map<BusType, std::unique_ptr<IMessageWriter>> writer_;
 	std::unordered_map<BusType, std::unique_ptr<IMessageWriter>> writer_;
 	IMessageWriter* create_writer(BusType bus_type);
 

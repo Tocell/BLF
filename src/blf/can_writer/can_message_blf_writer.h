@@ -12,7 +12,7 @@ public:
 	CanMessageBlfWriter();
 	~CanMessageBlfWriter() override = default;
 	[[nodiscard]] bool write(const BusMessage& msg, FileWriter& writer) override;
-	void set_timestamp_unit(int32_t unit) override;
+	void set_timestamp_unit(TimeStampUnit unit) override;
 
 private:
 	ObjectHeaderBase header_base_{};

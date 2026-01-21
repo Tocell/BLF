@@ -195,7 +195,7 @@ void BlfLogger::set_compres_level(int32_t compres_level)
 	file_statistics_writer_.set_compres_level(compres_level);
 }
 
-void BlfLogger::set_timestamp_unit(int32_t unit)
+void BlfLogger::set_timestamp_unit(TimeStampUnit unit)
 {
 	for (auto& it : writer_)
 	{
