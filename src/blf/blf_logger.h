@@ -29,7 +29,6 @@ public:
 	void close() override;
 	[[nodiscard]] bool is_open() const override;
 	[[nodiscard]] uint64_t get_message_count() const override;
-	[[nodiscard]] uint64_t get_file_size() const override;
 
 	bool write(BusMessagePtr msg) override;
 	void flush_logcontainer(LogContainer& log_container);

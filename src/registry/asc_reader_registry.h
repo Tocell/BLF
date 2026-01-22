@@ -5,9 +5,9 @@
 #include <unordered_map>
 #include <vector>
 #include <string>
-#include <cctype>
 
 #include "iasc_message_reader.h"
+#include "asc_reader_helper.h"
 
 namespace GWLogger::Asc
 {
@@ -44,25 +44,8 @@ public:
         registry_[key].push_back(std::move(f));
     }
 
-    static inline std::vector<std::string> split_ws(const std::string& s)
-    {
-        std::vector<std::string> out;
-        std::string cur;
-        for (unsigned char ch : s)
-        {
-            if (std::isspace(ch))
-            {
-                if (!cur.empty()) { out.push_back(cur); cur.clear(); }
-            }
-            else cur.push_back(static_cast<char>(ch));
-        }
-        if (!cur.empty()) out.push_back(cur);
-        return out;
-    }
-
     static inline AscLineKey asc_extract_key(const std::string& line)
     {
-        // 跳过空行/注释
         if (line.empty()) return AscLineKey::Unknown;
         if (line.size() >= 2 && line[0] == '/' && line[1] == '/') return AscLineKey::Unknown;
 

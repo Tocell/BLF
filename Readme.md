@@ -150,19 +150,6 @@ int main() {
 
 ---
 
-##  项目结构
-
-```text
-blf/
-├── cmake/            # CMake 辅助脚本与模块
-├── src/              # 源代码目录
-│   ├── file/         # BLF 文件读写核心实现
-│   ├── object/       # 消息对象定义 (CAN, LIN, FlexRay 等)
-│   └── demo/         # 示例程序与测试代码
-├── output/           # 构建输出目录 (bin, lib, include)
-├── CMakeLists.txt    # 主 CMake 配置文件
-└── conanfile.txt     # Conan 依赖描述文件
-```
 
 ---
 

@@ -164,21 +164,8 @@ bool BlfLogger::is_open() const
 
 uint64_t BlfLogger::get_message_count() const
 {
+	std::unique_lock lk(msg_mtx_);
 	return msg_queue_.size();
-}
-
-uint64_t BlfLogger::get_file_size() const
-{
-	uint64_t file_size = 0;
-	// if (OpenMode::Write == mode_)
-	// {
-	// 	file_size = file_writer_.file_size();
-	// }
-	// else if (OpenMode::Read == mode_)
-	// {
-	// 	file_size = file_reader_.get_pos();
-	// }
-	return file_size;
 }
 
 void BlfLogger::set_compres_level(int32_t compres_level)

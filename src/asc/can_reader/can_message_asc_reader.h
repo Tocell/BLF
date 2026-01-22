@@ -13,15 +13,10 @@ class CanMessageAscReader : public IAscMessageReader
 public:
     ~CanMessageAscReader() override = default;
 
-	// static constexpr uint32_t kKey = BL_OBJ_TYPE_CAN_MESSAGE;
-
-	// [[nodiscard]] uint32_t key() const override;
-
     [[nodiscard]] BusMessagePtr read_line(const std::string& line,
                             uint64_t file_start_posix_us) const override;
 
 	[[nodiscard]] bool match(const std::string& line) const override;
-
 };
 
 }

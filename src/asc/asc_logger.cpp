@@ -6,6 +6,7 @@
 #include <sstream>
 
 #include "asc_reader_registrar.h"
+#include "asc_reader_helper.h"
 
 namespace GWLogger::Asc
 {
@@ -81,20 +82,14 @@ bool AscLogger::is_open() const
 	{
 		return file_writer_.is_open();
 	}
-	else
-	{
-		return file_reader_.is_open();
-	}
+
+	return file_reader_.is_open();
 }
 
 uint64_t AscLogger::get_message_count() const
 {
-	return 0;
-}
-
-uint64_t AscLogger::get_file_size() const
-{
-	return 0;
+	std::unique_lock lk(msg_mtx_);
+	return msg_queue_.size();
 }
 
 bool AscLogger::write(BusMessagePtr msg)
@@ -206,22 +201,6 @@ void AscLogger::writer_header()
 static inline void trim_cr(std::string& s)
 {
     if (!s.empty() && s.back() == '\r') s.pop_back();
-}
-
-static inline std::vector<std::string> split_ws(const std::string& s)
-{
-    std::vector<std::string> out;
-    std::string cur;
-    for (unsigned char ch : s)
-    {
-        if (std::isspace(ch))
-        {
-            if (!cur.empty()) { out.push_back(cur); cur.clear(); }
-        }
-        else cur.push_back(static_cast<char>(ch));
-    }
-    if (!cur.empty()) out.push_back(cur);
-    return out;
 }
 
 static inline int month_to_index(const std::string& m)
@@ -402,8 +381,7 @@ void AscLogger::writer_thread_handler()
 		{
 			msg = std::move(msg_queue.front());
 			const auto bus_type = msg->get_bus_type();
-			// auto it = writer_.find(bus_type);
-			// if (it == writer_.end()) continue;
+
 			auto* w = create_writer(bus_type);
 			if (!w)
 			{
@@ -431,10 +409,7 @@ void AscLogger::reader_thread_handler()
 	std::string line;
 	constexpr auto kWakeInterval = std::chrono::microseconds(100);
 
-	// std::unordered_map<uint32_t, std::unique_ptr<IAscMessageReader>> asc_reader_cache;
-	std::unordered_map<GWLogger::Asc::AscLineKey,
-		std::vector<std::unique_ptr<GWLogger::Asc::IAscMessageReader>>,
-		GWLogger::Asc::AscLineKeyHash> reader_cache;
+	std::unordered_map<AscLineKey, std::vector<std::unique_ptr<IAscMessageReader>>, AscLineKeyHash> reader_cache;
 
 	while (is_running_.load())
 	{

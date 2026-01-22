@@ -24,7 +24,6 @@ public:
 
 	[[nodiscard]] bool is_open() const override;
 	[[nodiscard]] uint64_t get_message_count() const override;
-	[[nodiscard]] uint64_t get_file_size() const override;
 
 	void set_compres_level(int32_t compres_level) override { };
 	void set_timestamp_unit(TimeStampUnit unit) override;

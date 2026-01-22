@@ -1,6 +1,7 @@
 #include "canfd_message_asc_reader.h"
 #include "blf_reader_registry.h"
 #include "canfd_message.h"
+#include "asc_reader_helper.h"
 
 #include <algorithm>
 #include <cctype>
@@ -14,116 +15,6 @@ namespace GWLogger::Asc
 
 static AscReaderRegistrar<CanFdMessageAscReader> reg_canfd(AscLineKey::CanFd);
 
-// uint32_t CanFdMessageAscReader::key() const
-// {
-//     return kKey;
-// }
-
-static inline std::vector<std::string> split_ws(const std::string& s)
-{
-    std::vector<std::string> out;
-    std::string cur;
-    cur.reserve(16);
-
-    for (unsigned char ch : s)
-    {
-        if (std::isspace(ch))
-        {
-            if (!cur.empty())
-            {
-                out.push_back(std::move(cur));
-                cur.clear();
-                cur.reserve(16);
-            }
-        }
-        else
-        {
-            cur.push_back(static_cast<char>(ch));
-        }
-    }
-    if (!cur.empty())
-        out.push_back(std::move(cur));
-    return out;
-}
-
-static inline bool parse_double_strict(const std::string& s, double& out)
-{
-    // strtod 容忍度较高，但这里用 endptr 保证全串吃完
-    char* endp = nullptr;
-    out = std::strtod(s.c_str(), &endp);
-    return endp && *endp == '\0';
-}
-
-static inline bool parse_int_strict(const std::string& s, int& out)
-{
-    const char* b = s.data();
-    const char* e = s.data() + s.size();
-    auto r = std::from_chars(b, e, out, 10);
-    return r.ec == std::errc{} && r.ptr == e;
-}
-
-static inline bool parse_u32_base_strict(const std::string& s, int base, uint32_t& out)
-{
-    // base=10 or 16
-    char* endp = nullptr;
-    unsigned long v = std::strtoul(s.c_str(), &endp, base);
-    if (endp == s.c_str() || *endp != '\0') return false;
-    if (v > 0xFFFFFFFFul) return false;
-    out = static_cast<uint32_t>(v);
-    return true;
-}
-
-static inline bool parse_byte_hex2(const std::string& s, uint8_t& out)
-{
-    if (s.size() != 2) return false;
-    auto hex = [](char c)->int {
-        if (c >= '0' && c <= '9') return c - '0';
-        if (c >= 'a' && c <= 'f') return 10 + (c - 'a');
-        if (c >= 'A' && c <= 'F') return 10 + (c - 'A');
-        return -1;
-    };
-    int hi = hex(s[0]), lo = hex(s[1]);
-    if (hi < 0 || lo < 0) return false;
-    out = static_cast<uint8_t>((hi << 4) | lo);
-    return true;
-}
-
-static inline bool parse_byte_dec(const std::string& s, uint8_t& out)
-{
-    int v = 0;
-    if (!parse_int_strict(s, v)) return false;
-    if (v < 0 || v > 255) return false;
-    out = static_cast<uint8_t>(v);
-    return true;
-}
-
-static inline bool parse_can_id_token_maybe_x(const std::string& tok, uint32_t& out_id)
-{
-    std::string s = tok;
-    if (!s.empty() && (s.back() == 'x' || s.back() == 'X'))
-        s.pop_back();
-
-    // Vector ASC 里 ID 通常是 hex（不带 0x），但兼容 dec
-    if (parse_u32_base_strict(s, 16, out_id)) return true;
-    if (parse_u32_base_strict(s, 10, out_id)) return true;
-    return false;
-}
-
-static inline uint8_t canfd_dlc_to_len(uint8_t dlc)
-{
-    if (dlc <= 8) return dlc;
-    switch (dlc)
-    {
-    case 9:  return 12;
-    case 10: return 16;
-    case 11: return 20;
-    case 12: return 24;
-    case 13: return 32;
-    case 14: return 48;
-    case 15: return 64;
-    default: return 0;
-    }
-}
 
 BusMessagePtr CanFdMessageAscReader::read_line(const std::string& line,
                                               uint64_t file_start_posix_us) const
@@ -153,7 +44,7 @@ BusMessagePtr CanFdMessageAscReader::read_line(const std::string& line,
         const std::string& dir = t[3];
 
         uint32_t id = 0;
-        if (!parse_can_id_token_maybe_x(t[4], id)) return nullptr;
+        if (!parse_can_id_token(t[4], id)) return nullptr;
 
         int brs = 0, esi = 0;
         if (!parse_int_strict(t[6], brs)) return nullptr;
@@ -252,7 +143,7 @@ BusMessagePtr CanFdMessageAscReader::read_line(const std::string& line,
         if (!parse_int_strict(t[2], ch) || ch < 0 || ch > 0xFFFF) return nullptr;
 
         uint32_t id = 0;
-        if (!parse_can_id_token_maybe_x(t[3], id)) return nullptr;
+        if (!parse_can_id_token(t[3], id)) return nullptr;
 
         const std::string& dir = t[4];
 
@@ -296,7 +187,7 @@ BusMessagePtr CanFdMessageAscReader::read_line(const std::string& line,
 
 bool CanFdMessageAscReader::match(const std::string& line) const
 {
-    auto t = AscReaderRegistry::split_ws(line);
+    auto t = split_ws(line);
 
     // <Time> CANFD <Ch> <Dir> <ID> <Sym> <BRS> <ESI> <DLC> <DataLength> ...
     if (t.size() < 10) return false;
