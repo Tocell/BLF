@@ -6,7 +6,6 @@ CMakeToolchain
 cmake_layout
 
 [requires]
-nlohmann_json/3.12.0
 spdlog/1.15.1
 benchmark/1.9.1
 zlib/1.3.1
