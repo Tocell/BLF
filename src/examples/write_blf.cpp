@@ -1,17 +1,7 @@
 #include <iostream>
-#include "logger.h"
-#include "bus_message.h"
-#include "can_object.h"
-#include "message_factory.h"
-#include "frame_type_define.h"
-
-// #include "can_message.h"
-// #include "can_message2.h"
-// #include "canfd_message.h"
-#include "canfd_message64.h"
-
 #include <chrono>
 #include <thread>
+#include "gw_logger.h"
 
 inline uint64_t posix_time_us_uint64()
 {
