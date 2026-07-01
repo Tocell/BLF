@@ -1,9 +1,0 @@
-#ifndef CAN_REMOTE_MESSAGE_ASC_WRITER_H
-#define CAN_REMOTE_MESSAGE_ASC_WRITER_H
-
-class CanRemoteMessageAscWriter
-{
-
-};
-
-#endif //CAN_REMOTE_MESSAGE_ASC_WRITER_H

@@ -1,5 +1,6 @@
 #ifndef CAN_SETTING_CHANGE_MESSAGE_H
 #define CAN_SETTING_CHANGE_MESSAGE_H
+
 #include "can_object.h"
 #include "message_factory.h"
 
@@ -19,15 +20,17 @@ public:
     void set_timestamp(uint64_t timestamp) override;
 
     [[nodiscard]] const CanSettingChangedFrame& get_frame() const;
+
 private:
     struct Impl;
     std::unique_ptr<Impl> impl;
 };
 
-// 工厂模式显示特化
+using CanSettingChangedMessage = CanSettigChangedMessage;
+
 template <>
-struct MessageType<CanSettingChangedFrame> { using type = CanSettigChangedMessage; };
+struct MessageType<CanSettingChangedFrame> { using type = CanSettingChangedMessage; };
 
 }
 
-#endif //CAN_SETTING_CHANGE_MESSAGE_H
+#endif // CAN_SETTING_CHANGE_MESSAGE_H

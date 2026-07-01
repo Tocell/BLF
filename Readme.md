@@ -1,279 +1,283 @@
-# BLF I/O Library
+# BLF ASC I/O Library
 
 ![Language](https://img.shields.io/badge/language-C%2B%2B17-blue.svg)
 ![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20Linux%20%7C%20macOS-lightgrey.svg)
 ![Build](https://img.shields.io/badge/build-CMake-green.svg)
 
-一个基于 C++17 的高性能 Vector BLF (Binary Logging Format) 文件读写库，专为处理大规模日志文件而设计。支持 CAN, CAN-FD, LIN, 和 FlexRay 等多种消息类型的解析与写入。
+## 当前支持
 
----
+| 总线 | BLF 写入 | BLF 读取 | ASC 写入 | ASC 读取 | 当前基础帧 |
+| --- | --- | --- | --- | --- | --- |
+| CAN / CAN FD | 支持 | 支持 | 支持 | 支持 | `CanMessage` / `CanFdMessage` / `CanErrMessage` 等 |
+| LIN | 支持 | 支持 | 支持 | 支持 | `LinMessage` / `LinFrame` |
+| FlexRay | 支持 | 支持 | 支持 | 支持 | `FlexRayMessage` / `FlexRayFrame` |
+| Ethernet | 支持 | 支持 | 支持 | 支持 | `EthernetMessage` / `EthernetFrame` |
 
-##  目录
+ASC 基础行示例：
 
-- [功能特性](#-功能特性)
-- [环境依赖](#-环境依赖)
-- [快速开始](#-快速开始)
-- [安装 Conan](#1-安装-conan)
-- [编译项目](#2-编译项目)
-- [使用示例](#-使用示例)
-- [项目结构](#-项目结构)
-- [性能表现](#-性能表现)
-- [高级配置](#-高级配置)
-- [交叉编译](#交叉编译)
-- [代码分析 (Sanitizers)](#代码分析-sanitizers)
-
----
-
-##  功能特性
-
-*   **高性能读写**：针对大规模 BLF 日志文件进行了深度优化，支持高效的数据流处理。
-*   **多协议支持**：原生支持多种车载网络协议对象：
-    *   CAN / CAN-FD / CAN-FD (64-byte)
-    *   FlexRay
-    *   LIN
-*   **跨平台兼容**：完美支持 Windows, Linux 操作系统。
-*   **现代工程化**：
-    *   采用 **C++17** 标准，代码结构清晰。
-    *   使用 **CMake** (>= 3.20) 进行构建管理。
-    *   集成 **Conan** 包管理器，自动处理第三方依赖。
-*   **依赖库**：
-    *   [nlohmann_json](https://github.com/nlohmann/json)
-    *   [spdlog](https://github.com/gabime/spdlog)
-    *   [Google Benchmark](https://github.com/google/benchmark)
-    *   [zlib](https://zlib.net/)
-
----
-
-##  环境依赖
-
-在开始之前，请确保您的开发环境满足以下要求：
-
-*   **C++ 编译器**: 支持 C++17 (GCC, Clang, MSVC)
-*   **CMake**: 版本 >= 3.20
-*   **Python 3**: 用于运行 Conan
-*   **Conan**: C/C++ 包管理器
-
----
-
-##  快速开始
-
-### 1. 安装 Conan
-
-如果您的环境中尚未安装 Conan，请使用 pip 进行安装：
-
-```bash
-pip install conan
-# 初始化 Conan 配置（自动检测环境）
-conan profile detect
+```text
+0.001840 1 187 Rx d 8 8 63 C6 61 C4 5F C2 5D C0 0 0 0
+0.001845 CANFD 1 Rx 126 0 0 0 8 8 00 00 00 00 00 00 00 00 8 0 1000 0 0 0 0 0
+0.001000 LIN 1 Rx 12 8 01 02 03 04 05 06 07 08 0
+0.001000 FLEXRAY 1 Rx 100 2 8 0 0 01 02 03 04 05 06 07 08
+0.001000 ETHERNET 1 Rx 00:11:22:33:44:55 AA:BB:CC:DD:EE:FF 800 0 0 4 DE AD BE EF
 ```
 
-### 2. 编译项目
+GWLogger 是一个 C++17 总线日志读写库。当前支持 BLF 和 ASC 文件格式，面向高速写入本地文件和从文件中还原总线帧数据两类场景。
 
-本项目使用 CMake 结合 Conan 进行构建。
+## 设计目标
 
-#### Linux
-
-```bash
-# 1. 克隆仓库
-git clone <your-repo-url>
-cd blf
-
-# 2. 创建构建目录
-mkdir build && cd build
-
-# 3. 安装依赖 (Conan)
-conan install .. --build=missing
-
-# 4. 配置 CMake (使用 Conan 生成的工具链)
-cmake .. -DCMAKE_TOOLCHAIN_FILE=Release/generators/conan_toolchain.cmake -DCMAKE_BUILD_TYPE=Release
-
-# 5. 编译与安装
-make -j$(nproc)
-# 可选：安装到系统
-# sudo make install
+```text
+- 格式可扩展：当前支持 BLF、ASC，后续可以扩展 MDF 或私有协议格式。
+- 总线可扩展：当前以 CAN/CAN FD 为主，支持标准 LIN、FlexRay、Ethernet 格式，可自行定义其他总线结构扩展。
+- 帧类型可扩展：每种总线可以按自身协议扩展新的帧类型，例如 CAN 的 `CanMessage`、`CanMessage2`、`CanErrMessage`、`CanFdMessage64` 等。
+- 接口简洁：用户侧优先包含一个聚合头 `gw_logger.h`。
+- 注册分散：新增格式、总线或帧类型时，可以在新增 cpp 中完成自注册，不需要维护一个集中注册表文件。
+- 写入高效：BLF 写入先进入内存缓冲，再批量写入 LogContainer；支持 zlib 压缩。
 ```
 
-#### Windows (CLion / Visual Studio)
+## 性能测试
+```text
+ benchmark.cpp 极限测试 500000000 帧数据时，内存消耗处于 75 ~ 105 MB 之间
+ 当缓存帧超过阈值，对调用writer速率进行控制，避免内存暴涨。
+ benchmark 测试结果如下:
+ 2026-07-01T23:10:33+08:00
+ Running G:\C++\BLF\cmake-build-release\bin\benchmark_test.exe
+ Run on (16 X 3110 MHz CPU s)
+ CPU Caches:
+ L1 Data 48 KiB (x8)
+ L1 Instruction 32 KiB (x8)
+ L2 Unified 1280 KiB (x8)
+ L3 Unified 18432 KiB (x1)
+ progress : 4598710/500000000 0.92% elapsed=2.015s remain=217.089s speed=2282023 frame/s
+ progress : 8798804/500000000 1.76% elapsed=4.029s remain=224.900s speed=2184086 frame/s
+ progress : 11798904/500000000 2.36% elapsed=6.043s remain=250.050s speed=1952414 frame/s
+ progress : 15999001/500000000 3.20% elapsed=8.058s remain=243.785s speed=1985362 frame/s
+ progress : 19899097/500000000 3.98% elapsed=10.065s remain=242.841s speed=1977017 frame/s
+ progress : 24099187/500000000 4.82% elapsed=12.072s remain=238.403s speed=1996205 frame/s
+ progress : 28299279/500000000 5.66% elapsed=14.084s remain=234.760s speed=2009293 frame/s
+ ......
+ progress : 485809743/500000000 97.16% elapsed=237.020s remain=6.923s speed=2049661 frame/s
+ progress : 490009837/500000000 98.00% elapsed=239.033s remain=4.873s speed=2049968 frame/s
+ progress : 494209930/500000000 98.84% elapsed=241.047s remain=2.824s speed=2050264 frame/s
+ progress : 498710024/500000000 99.74% elapsed=243.061s remain=0.629s speed=2051787 frame/s
+ progress : 500000000/500000000 100.00% elapsed=245.070s remain=0.000s speed=2040237 frame/s
+ end time : 1782918878769750300 object_count = 500000000
+---------------------------------------------------------------------------------------
+Benchmark                             Time             CPU   Iterations UserCounters...
+---------------------------------------------------------------------------------------
+BM_BLFWrite_CorrectLifecycle 2.4509e+11 ns   6.9031e+10 ns            1 bytes_per_second=447.61Mi/s
+```
 
-1.  确保已安装 Conan 并配置好环境变量。
-2.  使用 CLion 打开项目，CLion 会自动识别 `CMakeLists.txt`。
-3.  在 CMake 选项中添加 Conan 工具链配置：
-    ```cmake
-    -DCMAKE_PROJECT_TOP_LEVEL_INCLUDES=cmake/conan/conan_provider.cmake
-    ```
-    新版 Clion 需要手动指定 Conan 路径（如果未在 PATH 中）：
-    ```cmake
-    -DCONAN_COMMAND=path/to/conan   
-    C:\Users\T\AppData\Roaming\Python\Python312\Scripts\conan.exe
-    ```
+## 数据准确性验证
+```text
+ 保存的 blf 文件均通过 canoe 进行解析验证格式准确性 
+ ```
+![数据准确性验证.png](doc/photo/%E6%95%B0%E6%8D%AE%E5%87%86%E7%A1%AE%E6%80%A7%E9%AA%8C%E8%AF%81.png)
 
----
-
-##  使用示例
-
-### 读取 BLF 文件
-
-以下是一个简单的示例，展示如何打开 BLF 文件并读取其中的 CAN 消息：
+## 快速使用
 
 ```cpp
-#include "file.h"
-#include "can_message.h"
-#include <iostream>
+#include "gw_logger.h"
 
-int main() {
-    BLF::File file;
-    // 打开 BLF 文件
-    if (!file.open("example.blf")) {
-        std::cerr << "Failed to open file!" << std::endl;
+#include <chrono>
+
+static uint64_t now_us()
+{
+    auto now = std::chrono::system_clock::now();
+    return std::chrono::time_point_cast<std::chrono::microseconds>(
+        now).time_since_epoch().count();
+}
+
+int main()
+{
+    auto logger = GWLogger::Logger::create(GWLogger::FileFormat::BLF);
+    if (!logger || !logger->open("test.blf", GWLogger::OpenMode::Write)) {
         return -1;
     }
 
-    // 循环读取对象
-    while (true) {
-        auto* object = file.read();
-        if (!object) break; // 读取结束
+    logger->set_compres_level(6);
+    logger->set_timestamp_unit(GWLogger::TimeStampUnit::BLF_TIME_ONE_NANS);
 
-        if (object->object_type == BL_OBJ_TYPE_CAN_MESSAGE) {
-            auto* can_msg = reinterpret_cast<BLF::CanMessage*>(object);
-            std::cout << "Timestamp: " << can_msg->object_timestamp 
-                      << " ID: " << can_msg->id 
-                      << " DLC: " << can_msg->dlc << std::endl;
-        }
-        // 处理其他消息类型...
-    }
+    GWLogger::CanFrame frame{};
+    frame.channel = 1;
+    frame.flags = GWLogger::TX;
+    frame.dlc = 8;
+    frame.id = 0x123;
 
-    file.close();
+    auto msg = GWLogger::make_message(frame);
+    msg->set_timestamp(now_us() * 1000ULL);
+    logger->write(std::move(msg));
+
+    logger->close();
     return 0;
 }
 ```
 
-更多示例请参考 `src/demo/` 目录。
+## 流程与架构
+![format.png](doc/photo/format.png)
 
----
+## 注册机制
 
+库保留分散式静态注册。新增能力时，在对应 cpp 中声明一个静态 registrar 即可。
 
----
+格式注册示例：
 
-##  性能表现
+```cpp
+static LoggerRegistrar<BlfLogger> registrar(FileFormat::BLF);
+```
 
-本项目经过大量性能测试，确保在处理高吞吐量数据时的稳定性与效率。
+writer 注册示例：
 
-*   **内存占用**：在 Windows 环境下测试，内存消耗稳定在 **140MB** 以内，当内存使用超过预先设定阈值之后会限制输入速率，保证内存使用在可控范围之内。
-  * 适合在资源受限的设备上运行。
-*   **写入速度**：支持批量写入优化。在 SSD 环境下，写入速率可达 **200 MiB/s** (取决于具体硬件配置)。
+```cpp
+GWLOGGER_REGISTER_BLF_FRAME_WRITER(
+    CanMessageBlfWriter,
+    CanMessage,
+    CanFrame,
+    BL_OBJ_TYPE_CAN_MESSAGE,
+    BusType::CAN)
+```
 
-### 基准测试数据 (Benchmark)
+BLF reader 注册示例：
 
-> **注意**：性能测试需要结合 CPU 上下文切换开销综合分析。以下数据为个人 Windows 环境下 SSD 写入测试结果。
+```cpp
+GWLOGGER_REGISTER_BLF_FRAME_READER(
+    CanMessageBlfReader,
+    CanFrame,
+    BL_OBJ_TYPE_CAN_MESSAGE)
+```
+
+ASC reader 注册示例：
+
+```cpp
+static AscReaderRegistrar<CanMessageAscReader> reg_can(
+    AscLineKey::CanClassic);
+```
+
+## 扩展一个 BLF 帧类型
+
+对于“BLF 对象头 + 时间戳头 + POD 帧体”的帧类型，可以直接复用 `BlfFrameWriter` 和 `BlfFrameReader` 模板。
+
+1. 定义帧结构，例如：
+
+```cpp
+struct MyCanFrame {
+    uint16_t channel;
+    uint32_t id;
+    uint8_t data[8];
+};
+```
+
+2. 定义消息类，并特化 `MessageType<FrameT>`：
+
+```cpp
+class MyCanMessage : public BusMessage {
+public:
+    explicit MyCanMessage(const MyCanFrame& frame);
+    BusType get_bus_type() const override;
+    uint64_t get_timestamp() const override;
+    void set_timestamp(uint64_t timestamp) override;
+    const MyCanFrame& get_frame() const;
+};
+
+template <>
+struct MessageType<MyCanFrame> {
+    using type = MyCanMessage;
+};
+```
+
+3. 定义 BLF writer：
+
+```cpp
+#include "blf_frame_registration.h"
+#include "can/my_can_message.h"
+
+namespace GWLogger::Blf
+{
+
+GWLOGGER_REGISTER_BLF_FRAME_WRITER(
+    MyCanMessageBlfWriter,
+    MyCanMessage,
+    MyCanFrame,
+    BL_OBJ_TYPE_MY_CAN_MESSAGE,
+    BusType::CAN)
+
+}
+```
+
+4. 定义 BLF reader：
+
+```cpp
+#include "blf_frame_registration.h"
+#include "can/my_can_message.h"
+
+namespace GWLogger::Blf
+{
+
+GWLOGGER_REGISTER_BLF_FRAME_READER(
+    MyCanMessageBlfReader,
+    MyCanFrame,
+    BL_OBJ_TYPE_MY_CAN_MESSAGE)
+
+}
+```
+
+如果某个 BLF 对象不是简单 POD 帧体，仍然可以手写 `IMessageWriter` 或 `IMessageReader`，注册机制不变。
+
+## 目录约定
+
+当前目录仍兼容已有结构：
 
 ```text
-2025-08-22T15:14:26+08:00
-Running G:\C++\CAN\BLF\blf\cmake-build-debug\src\benchmark_test.exe
-Run on (16 X 3110 MHz CPU s)
-CPU Caches:
-L1 Data 48 KiB (x8)
-L1 Instruction 32 KiB (x8)
-L2 Unified 1280 KiB (x8)
-L3 Unified 18432 KiB (x1)
-***WARNING*** Library was built as DEBUG. Timings may be affected.
-end time : 1755846867002921600 object_count = 50000  file_statistics_.object_count = 50000
-end time : 1755846867096318900 object_count = 50000  file_statistics_.object_count = 50000
-end time : 1755846867188824000 object_count = 50000  file_statistics_.object_count = 50000
-end time : 1755846867281808100 object_count = 50000  file_statistics_.object_count = 50000
-end time : 1755846867374520600 object_count = 50000  file_statistics_.object_count = 50000
-end time : 1755846867467102200 object_count = 50000  file_statistics_.object_count = 50000
-end time : 1755846867559753300 object_count = 50000  file_statistics_.object_count = 50000
-end time : 1755846867653179300 object_count = 50000  file_statistics_.object_count = 50000
-end time : 1755846867746851900 object_count = 50000  file_statistics_.object_count = 50000
-end time : 1755846867839674500 object_count = 50000  file_statistics_.object_count = 50000
----------------------------------------------------------------------------------------
-Benchmark                             Time             CPU   Iterations UserCounters...
----------------------------------------------------------------------------------------
-BM_BLFWrite_CorrectLifecycle   92644011 ns     57291667 ns            9 bytes_per_second=13.7607Mi/s
-
-
-2025-08-22T15:15:29+08:00
-Running G:\C++\CAN\BLF\blf\cmake-build-debug\src\benchmark_test.exe
-Run on (16 X 3110 MHz CPU s)
-CPU Caches:
-L1 Data 48 KiB (x8)
-L1 Instruction 32 KiB (x8)
-L2 Unified 1280 KiB (x8)
-L3 Unified 18432 KiB (x1)
-***WARNING*** Library was built as DEBUG. Timings may be affected.
-end time : 1755846929719107800 object_count = 500000  file_statistics_.object_count = 500000
-end time : 1755846930273498500 object_count = 500000  file_statistics_.object_count = 500000
-end time : 1755846930817075300 object_count = 500000  file_statistics_.object_count = 500000
----------------------------------------------------------------------------------------
-Benchmark                             Time             CPU   Iterations UserCounters...
----------------------------------------------------------------------------------------
-BM_BLFWrite_CorrectLifecycle  548638500 ns    382812500 ns            2 bytes_per_second=92.6738Mi/s
-
-
-2025-08-22T15:15:54+08:00
-Running G:\C++\CAN\BLF\blf\cmake-build-debug\src\benchmark_test.exe
-Run on (16 X 3110 MHz CPU s)
-CPU Caches:
-L1 Data 48 KiB (x8)
-L1 Instruction 32 KiB (x8)
-L2 Unified 1280 KiB (x8)
-L3 Unified 18432 KiB (x1)
-***WARNING*** Library was built as DEBUG. Timings may be affected.
-end time : 1755846959772774100 object_count = 5000000  file_statistics_.object_count = 5000000
----------------------------------------------------------------------------------------
-Benchmark                             Time             CPU   Iterations UserCounters...
----------------------------------------------------------------------------------------
-BM_BLFWrite_CorrectLifecycle 5242105200 ns   3609375000 ns            1 bytes_per_second=196.581Mi/s
-
-
-2025-08-22T15:10:02+08:00
-Running G:\C++\CAN\BLF\blf\cmake-build-debug\src\benchmark_test.exe
-Run on (16 X 3110 MHz CPU s)
-CPU Caches:
-L1 Data 48 KiB (x8)
-L1 Instruction 32 KiB (x8)
-L2 Unified 1280 KiB (x8)
-L3 Unified 18432 KiB (x1)
-***WARNING*** Library was built as DEBUG. Timings may be affected.
-end time : 1755846652138018800 object_count = 50000000  file_statistics_.object_count = 50000000
----------------------------------------------------------------------------------------
-Benchmark                             Time             CPU   Iterations UserCounters...
----------------------------------------------------------------------------------------
-BM_BLFWrite_CorrectLifecycle 4.9804e+10 ns   3.3984e+10 ns            1 bytes_per_second=208.782Mi/s
+src/include/              公共 API
+src/include/can/          CAN 消息类型
+src/include/                         公共 API，用户侧 include 入口
+src/include/can/                     CAN 公共消息头
+src/core/api/                        公共 API 实现与内部抽象接口
+src/core/io/                         文件读写封装
+src/core/registry/                   注册表与 registrar
+src/core/internal_define.h           内部常量
+src/formats/blf/                     BLF 格式实现
+src/formats/blf/can_writer/          CAN BLF writer 自注册 cpp
+src/formats/blf/can_reader/          CAN BLF reader 自注册 cpp
+src/formats/asc/                     ASC 格式实现
+src/formats/asc/can_writer/          CAN ASC writer
+src/formats/asc/can_reader/          CAN ASC reader
+src/messages/object/can/             CAN 消息对象实现
+src/examples/                        示例程序
 ```
 
-**分析结论**：
+新代码建议使用小写蛇形文件名、PascalCase 类型名、`GWLogger` 命名空间。用户侧可以使用兼容别名：
 
-*   **批量写入优势**：批量写入大量数据时，上下文切换耗时占比更小，每次写入物理磁盘任务更饱和，写入速率也随之提升。
-*   **内存控制**：内部对内存使用加以了限制，避免了消费速度跟不上生产速度造成堆空间崩溃问题。经过多次测试，在 Windows 下，内存消耗稳定在 140M 以内。
+```cpp
+namespace gwlogger = GWLogger;
+```
 
-> **优化建议**：如需进一步提升 I/O 性能，可考虑实现 Direct I/O 模式，利用 DMA 直接写入磁盘，减少内核缓存拷贝。
+## 构建
 
----
-
-##  高级配置
-
-### 交叉编译
-
-通过指定 `CMAKE_TOOLCHAIN_FILE`，可以轻松支持交叉编译架构（如 ARM64）。
+项目使用 CMake 和 Conan。
 
 ```bash
-cmake .. \
-    -DCMAKE_TOOLCHAIN_FILE=path/to/your_toolchain.cmake \
-    -DTOOLCHAIN_PREFIX="aarch64-linux-"
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+cmake --build build -j
 ```
 
-### 代码分析 (Sanitizers)
+Windows 下请确保 Visual Studio C++ 工具链和 Windows SDK 安装完整。
 
-支持集成 AddressSanitizer (ASan) 和 ThreadSanitizer (TSan) 进行运行时检测。
+## 依赖
 
-1.  在 `CMakeLists.txt` 中启用 Sanitizer 模块。
-2.  配置时添加参数：
+- C++17
+- CMake 3.20+
+- zlib
+- Conan
 
-```bash
-# 启用 AddressSanitizer
-cmake .. -DUSE_SANITIZER=Address
+## 编译说明
+ ```text
+ 项目使用了 Conan 包管理工具，编译器为 Nijia 编译时需要指定 CMake 宏
+ -DCMAKE_PROJECT_TOP_LEVEL_INCLUDES=cmake/conan/conan_provider.cmake
+ Conan 下载包时过程比较缓慢，可能因为网络问题中断，多次重试即可，第一次下载完成之后，后续不会再次下载
 ```
 
---- 
+## 状态说明
 
+当前 BLF CAN reader/writer 已复用 `BlfFrameWriter` 和 `BlfFrameReader` 模板，保留原有类名和分散式注册方式。ASC 文本格式因为解析规则和输出格式差异更大，仍保留专用实现。

@@ -24,7 +24,7 @@ public:
     [[nodiscard]] virtual bool is_open() const = 0;
     // 获取消息数量
     [[nodiscard]] virtual uint64_t get_message_count() const = 0;
-    [[nodiscard]] virtual uint64_t get_file_size() const = 0;
+    [[nodiscard]] virtual uint64_t get_file_size() const { return 0; };
     // 设置 blf 格式压缩级别，默认为 6
     virtual void set_compres_level(int32_t compres_level) = 0;
     // 设置时间戳单位
