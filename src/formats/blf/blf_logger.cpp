@@ -7,6 +7,8 @@
 #include "writer_registry.h"
 #include "zlib.h"
 
+#include <cstring>
+
 namespace GWLogger::Blf
 {
 

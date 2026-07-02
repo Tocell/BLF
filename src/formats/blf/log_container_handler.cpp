@@ -2,6 +2,7 @@
 #include "frame_type_define.h"
 #include "zlib.h"
 #include <iostream>
+#include <cstring>
 
 namespace GWLogger::Blf
 {

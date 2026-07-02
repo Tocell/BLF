@@ -1,6 +1,7 @@
 #include "file_writer.h"
 
 #include <iostream>
+#include <cstring>
 
 namespace GWLogger{
 

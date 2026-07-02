@@ -1,6 +1,7 @@
 #include "file_statistics_handler.h"
 #include <cstdint>
 #include <ctime>
+#include <cstring>
 
 namespace GWLogger::Blf
 {

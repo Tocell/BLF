@@ -10,6 +10,7 @@
 #include <mutex>
 #include <queue>
 #include <condition_variable>
+#include <atomic>
 
 namespace GWLogger::Asc
 {
