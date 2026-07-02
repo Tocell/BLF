@@ -272,10 +272,35 @@ Windows 下请确保 Visual Studio C++ 工具链和 Windows SDK 安装完整。
 - Conan
 
 ## 编译说明
+### Linux
  ```text
- 项目使用了 Conan 包管理工具，编译器为 Nijia 编译时需要指定 CMake 宏
+ 项目使用 Conan 包管理工具，编译器为 Nijia 编译前要先配置 conan 环境，若是觉得 conan 使用麻烦可以使用 vcpkg 功能一致
+ 本项目就不修改了
+ 1. 安装 conan  通过 pip 安装
+    sudo apt install python3-pip
+    pip install conan 
+ 2.设置环境变量  可以直接在 ～/.bashrc 中添加
+    export PATH=$PATH:/home/t/.local/bin
+    
+ 3.编译
+ 设置依赖环境 （这是由于有的IDE无法识别到系统环境变量所以需要在 IDE 中再加一次）
+ PATH=～/.local/bin:$PATH
+ 或者 
+ -DCONAN_COMMAND=path/to/conan 
+ cmake 链接宏
  -DCMAKE_PROJECT_TOP_LEVEL_INCLUDES=cmake/conan/conan_provider.cmake
  Conan 下载包时过程比较缓慢，可能因为网络问题中断，多次重试即可，第一次下载完成之后，后续不会再次下载
+```
+
+### windows 
+```text
+ 1. 确保已安装 Conan 并配置好环境变量，pip install conan。
+ 2. 使用 CLion 打开项目，CLion 会自动识别 CMakeLists.txt。
+ 3. 在 CMake 选项中添加 Conan 工具链配置：
+   -DCMAKE_PROJECT_TOP_LEVEL_INCLUDES=cmake/conan/conan_provider.cmake
+   新版 Clion 需要手动指定 Conan 路径（如果未在 PATH 中）：
+    -DCONAN_COMMAND=path/to/conan   
+    如：C:\Users\T\AppData\Roaming\Python\Python312\Scripts\conan.exe
 ```
 
 ## 状态说明
