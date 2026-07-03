@@ -1,6 +1,7 @@
 #include <iostream>
 #include <chrono>
 #include <thread>
+#include <atomic>
 #include "gw_logger.h"
 
 inline uint64_t posix_time_us_uint64()
@@ -39,91 +40,12 @@ int main()
 		while (is_running)
 		{
 			next += period;
-			printf("Write Frame %d Queue Count : %llu \n", write_cnt.load(), logger->get_message_count());
+			printf("Write Frame %d Queue Count : %lu \n", write_cnt.load(), logger->get_message_count());
 			std::this_thread::sleep_until(next);
 		}
 	});
 
 	uint32_t id = 0x123;
-	// for (int i = 0; i < 100; i++)
-	// {
-	// 	next += period;
-	//
-	// 	GWLogger::CanFrame can_frame{};
-	// 	can_frame.channel = 1;
-	// 	can_frame.flags = 1;
-	// 	can_frame.dlc = 8;
-	// 	can_frame.id = (++id) % 2047;
-	// 	for (auto j = 0; j < can_frame.dlc; j++)
-	// 	{
-	// 		can_frame.data[j] = ((j + 1) * i) % 200;
-	// 	}
-	// 	auto message = make_message(can_frame);
-	//
-	// 	auto time = posix_time_us_uint64();
-	// 	message->set_timestamp(time * 1000ULL);
-	//
-	// 	logger->write(std::move(message));
-	// 	write_cnt.fetch_add(1);
-	// }
-	// std::cout << "write CAN  " << write_cnt << " frame." << std::endl;
-
-	// id = 0x124;
-	// write_cnt = 0;
-	// for (int i = 0; i < 100; i++)
-	// {
-	// 	next += period;
-	//
-	// 	GWLogger::CanFrame2 can_frame{};
-	// 	can_frame.channel = 1;
-	// 	can_frame.flags = 1;
-	// 	can_frame.dlc = 8;
-	// 	can_frame.id = (++id) % 2047;
-	// 	for (auto j = 0; j < can_frame.dlc; j++)
-	// 	{
-	// 		can_frame.data[j] = ((j + 1) * i) % 200;
-	// 	}
-	// 	auto message = make_message(can_frame);
-	//
-	// 	auto time = posix_time_us_uint64();
-	// 	message->set_timestamp(time * 1000ULL);
-	//
-	// 	logger->write(std::move(message));
-	// 	write_cnt.fetch_add(1);
-	// }
-	// std::cout << "write CAN2  " << write_cnt << " frame." << std::endl;
-
-	// id = 0x125;
-	// write_cnt = 0;
-	// for (int i = 0; i < 100; i++)
-	// {
-	// 	next += period;
-	//
-	// 	GWLogger::CanFdFrame can_frame{};
-	// 	can_frame.channel = 1;
-	// 	can_frame.flags = 1;
-	// 	can_frame.dlc = 8;
-	// 	can_frame.id = (++id) % 2047;
-	//
-	// 	can_frame.valid_data_bytes = 8;
-	// 	can_frame.can_fd_flags     = 1;
-	// 	can_frame.frame_length     = 8;
-	// 	can_frame.arb_bit_count    = 0;
-	//
-	// 	for (auto j = 0; j < can_frame.dlc; j++)
-	// 	{
-	// 		can_frame.data[j] = ((j + 1) * i) % 200;
-	// 	}
-	// 	auto message = make_message(can_frame);
-	//
-	// 	auto time = posix_time_us_uint64();
-	// 	message->set_timestamp(time * 1000ULL);
-	//
-	// 	logger->write(std::move(message));
-	// 	write_cnt.fetch_add(1);
-	// }
-	// std::cout << "write CANFD  " << write_cnt << " frame." << std::endl;
-
 	id = 0x126;
 	write_cnt = 0;
 	for (int i = 0; i < 100; i++)
@@ -138,18 +60,18 @@ int main()
 		can_frame.tx_count = 1;
 		can_frame.id = (++id) % 2047;
 
-		can_frame.frame_length = 0;        // 固定值即�?
-		can_frame.flags = 0x1000;          // 关键：EDL=1 => CAN FD（不然会被识别成 CAN�?
+		can_frame.frame_length = 0;        // 固定值即 0
+		can_frame.flags = 0x1000;          // 关键：EDL=1 => CAN FD（不然会被识别成 CAN
 		can_frame.btr_cfg_arb = 0;
 		can_frame.btr_cfg_data = 0;
 		can_frame.time_offset_brs_ns = 0;
 		can_frame.time_offset_crc_del_ns = 0;
 		can_frame.bit_count = 0;
-		can_frame.dir = 1;                 // 固定：Tx（如果你想看 Rx 就改 0�?
+		can_frame.dir = 1;                 // 固定：Tx（如果你想看 Rx 就改 0
 		can_frame.ext_data_offset = 0;
 		can_frame.crc = 0;
 
-		// �?64 字节数据
+		// 64 字节数据
 		for (int j = 0; j < 64; ++j)
 		{
 			can_frame.data[j] = static_cast<uint8_t>((j + i) * i);

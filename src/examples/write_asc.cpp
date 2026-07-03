@@ -1,6 +1,7 @@
 #include <iostream>
 #include <chrono>
 #include <thread>
+#include <atomic>
 #include "gw_logger.h"
 
 inline uint64_t posix_time_us_uint64()
@@ -35,7 +36,7 @@ int main()
 		while (is_running)
 		{
 			next += period;
-			printf("Write Frame %d Queue Count : %llu \n", write_cnt.load(), logger->get_message_count());
+			printf("Write Frame %d Queue Count : %lu \n", write_cnt.load(), logger->get_message_count());
 			std::this_thread::sleep_until(next);
 		}
 	});
