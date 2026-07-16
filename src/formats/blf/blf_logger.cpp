@@ -393,8 +393,8 @@ void BlfLogger::read_busmsg_thread_handler()
         LogContainerBlock block;
 
         {
-            std::unique_lock lk(msg_mtx_);
-            msg_cv_.wait_for(lk, kWakeInterval, [&] {
+            std::unique_lock lk(log_mtx_);
+            log_cv_.wait_for(lk, kWakeInterval, [&] {
                 return !log_queue_.empty() || file_eof_.load() || !is_running_.load();
             });
 

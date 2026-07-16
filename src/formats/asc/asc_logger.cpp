@@ -3,7 +3,9 @@
 #include <chrono>
 #include <ctime>
 #include <iomanip>
+#include <iostream>
 #include <sstream>
+#include <unordered_set>
 
 #include "asc_reader_registrar.h"
 #include "asc_reader_helper.h"
@@ -361,6 +363,7 @@ void AscLogger::read_header()
 void AscLogger::writer_thread_handler()
 {
 	constexpr auto kWakeInterval = std::chrono::microseconds(10);
+	std::unordered_set<BusType> missing_writers;
 
 	while (true)
 	{
@@ -387,6 +390,11 @@ void AscLogger::writer_thread_handler()
 			auto* w = create_writer(bus_type);
 			if (!w)
 			{
+				if (missing_writers.insert(bus_type).second)
+				{
+					std::cerr << "GWLogger ASC writer is not registered for bus type "
+						<< static_cast<uint32_t>(bus_type) << '\n';
+				}
 				msg_queue.pop();
 				continue;
 			}
