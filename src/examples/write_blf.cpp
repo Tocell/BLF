@@ -1,6 +1,7 @@
 #include <iostream>
 #include <chrono>
 #include <thread>
+#include <atomic>
 #include "gw_logger.h"
 
 inline uint64_t posix_time_us_uint64()
@@ -39,7 +40,7 @@ int main()
 		while (is_running)
 		{
 			next += period;
-			printf("Write Frame %d Queue Count : %llu \n", write_cnt.load(), logger->get_message_count());
+			printf("Write Frame %d Queue Count : %lu \n", write_cnt.load(), logger->get_message_count());
 			std::this_thread::sleep_until(next);
 		}
 	});
@@ -59,18 +60,18 @@ int main()
 		can_frame.tx_count = 1;
 		can_frame.id = (++id) % 2047;
 
-		can_frame.frame_length = 0;        // 固定值即�?
-		can_frame.flags = 0x1000;          // 关键：EDL=1 => CAN FD（不然会被识别成 CAN�?
+		can_frame.frame_length = 0;        // 固定值即 0
+		can_frame.flags = 0x1000;          // 关键：EDL=1 => CAN FD（不然会被识别成 CAN
 		can_frame.btr_cfg_arb = 0;
 		can_frame.btr_cfg_data = 0;
 		can_frame.time_offset_brs_ns = 0;
 		can_frame.time_offset_crc_del_ns = 0;
 		can_frame.bit_count = 0;
-		can_frame.dir = 1;                 // 固定：Tx（如果你想看 Rx 就改 0�?
+		can_frame.dir = 1;                 // 固定：Tx（如果你想看 Rx 就改 0
 		can_frame.ext_data_offset = 0;
 		can_frame.crc = 0;
 
-		// �?64 字节数据
+		// 64 字节数据
 		for (int j = 0; j < 64; ++j)
 		{
 			can_frame.data[j] = static_cast<uint8_t>((j + i) * i);

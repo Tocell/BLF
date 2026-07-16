@@ -1,0 +1,110 @@
+###############################################################################
+# Global Git Attributes for cross-platform C++ / Qt / Python / Shell projects #
+###############################################################################
+
+###############################################################################
+# 基本行尾规范
+###############################################################################
+* text=auto eol=lf
+
+###############################################################################
+# 源代码文件（C++ / Qt / CMake / Python / Lua）
+###############################################################################
+*.c      text eol=lf
+*.cpp    text eol=lf
+*.cc     text eol=lf
+*.h      text eol=lf
+*.hpp    text eol=lf
+*.inl    text eol=lf
+*.pri    text eol=lf
+*.pro    text eol=lf
+*.qrc    text eol=lf
+*.ui     text eol=lf
+*.qml    text eol=lf
+*.ts     text eol=lf
+CMakeLists.txt text eol=lf
+*.cmake  text eol=lf
+*.py     text eol=lf
+*.lua    text eol=lf
+
+###############################################################################
+# 脚本与配置文件
+###############################################################################
+*.json   text eol=lf
+*.xml    text eol=lf
+*.yaml   text eol=lf
+*.yml    text eol=lf
+*.md     text eol=lf
+*.html   text eol=lf
+*.htm    text eol=lf
+*.css    text eol=lf
+*.js     text eol=lf
+*.ts     text eol=lf
+*.sh     text eol=lf
+*.ini    text eol=lf
+*.cfg    text eol=lf
+*.conf   text eol=lf
+*.txt    text eol=lf
+
+###############################################################################
+# Windows 脚本（必须使用 CRLF）
+###############################################################################
+*.bat    text eol=crlf
+*.cmd    text eol=crlf
+
+###############################################################################
+# 二进制文件（禁止行尾转换）
+###############################################################################
+# 图像与图标
+*.png    binary
+*.jpg    binary
+*.jpeg   binary
+*.ico    binary
+*.gif    binary
+*.bmp    binary
+*.svg    binary
+
+# 压缩包与归档
+*.zip    binary
+*.7z     binary
+*.tar    binary
+*.gz     binary
+*.xz     binary
+
+# 可执行文件与库
+*.dll    binary
+*.exe    binary
+*.so     binary
+*.a      binary
+*.lib    binary
+*.pdb    binary
+*.bin    binary
+*.rcc    binary
+*.qch    binary
+*.qhc    binary
+
+# 字体
+*.ttf    binary
+*.otf    binary
+
+###############################################################################
+# 数据库与证书文件（你的新增项）
+###############################################################################
+# SQLite 数据库文件
+*.db        binary
+*.sqlite    binary
+*.sqlite3   binary
+
+# TLS/SSL 证书与密钥
+*.pem       binary
+*.crt       binary
+*.cer       binary
+*.der       binary
+*.pfx       binary
+*.key       binary
+
+###############################################################################
+# 其他敏感二进制
+###############################################################################
+*.keystore  binary
+*.p12       binary

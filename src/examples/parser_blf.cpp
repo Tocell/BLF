@@ -20,7 +20,7 @@ int main()
 
 	uint64_t start_time, stop_time;
 	logger->get_measure_time(start_time, stop_time);
-	printf("File measure start_time: %llu  stop time: %llu\n", start_time, stop_time);
+	printf("File measure start_time: %lu  stop time: %lu\n", start_time, stop_time);
 
 	int32_t cnt = 0;
 	GWLogger::BusMessagePtr msg{};
