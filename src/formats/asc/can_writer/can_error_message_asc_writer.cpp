@@ -21,8 +21,10 @@ static inline std::string build_can_error_asc_line(
 	if (timestamps_absolute) {
 		t_sec = static_cast<double>(msg_timestamp_us) / 1e6;
 	} else {
-		const uint64_t base = std::min(msg_timestamp_us, file_start_time_us);
-		t_sec = static_cast<double>(msg_timestamp_us - base) / 1e6;
+		const uint64_t delta_us = msg_timestamp_us > file_start_time_us
+			? msg_timestamp_us - file_start_time_us
+			: 0ULL;
+		t_sec = static_cast<double>(delta_us) / 1e6;
 	}
 
 	std::ostringstream oss;

@@ -117,8 +117,11 @@ void BlfLogger::flush_logcontainer(LogContainer& log_container)
 {
 	auto& lc = log_container_.get_logcontainer();
 
-	log_container_.set_buffer(file_writer_.get_buffer(), file_writer_.get_pos());
-	log_container_.compress(compression_method_, compression_level_);
+	log_container_.compress_from(
+		file_writer_.get_buffer(),
+		file_writer_.get_pos(),
+		compression_method_,
+		compression_level_);
 
 	LogContainerDiskHeader hdr{};
 	hdr.base.signature      = BL_OBJ_SIGNATURE;
@@ -222,7 +225,7 @@ void BlfLogger::writer_thread_handler()
 {
 	constexpr auto kWakeInterval = std::chrono::microseconds(10);
 
-	while (is_running_.load())
+	while (true)
 	{
 		BusMessagePtr msg;
 		std::queue<BusMessagePtr> msg_queue;

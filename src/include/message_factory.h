@@ -16,9 +16,9 @@ struct MessageDeleter {
 	}
 };
 
-
 using BusMessagePtr = std::unique_ptr<BusMessage, MessageDeleter>;
 
+// 类型萃取器
 template <typename FrameT>
 struct MessageType;
 

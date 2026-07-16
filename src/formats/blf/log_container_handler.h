@@ -13,6 +13,7 @@ public:
 	~LogContainerHandler() = default;
 
 	void compress(uint16_t compression_method, int compression_level);
+	void compress_from(const uint8_t* data, size_t size, uint16_t compression_method, int compression_level);
 	void uncompress();
 	LogContainer& get_logcontainer();
 	void set_buffer(uint8_t* data, size_t size);

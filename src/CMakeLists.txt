@@ -1,7 +1,7 @@
 find_package(benchmark REQUIRED)
 find_package(ZLIB REQUIRED)
 
-file(GLOB SOURCE
+file(GLOB SOURCE CONFIGURE_DEPENDS
         ${CMAKE_CURRENT_SOURCE_DIR}/*.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/core/api/*.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/core/io/*.cpp

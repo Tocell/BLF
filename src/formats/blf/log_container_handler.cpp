@@ -27,25 +27,44 @@ size_t LogContainerHandler::calculate_size()
 
 void LogContainerHandler::compress(uint16_t compression_method, int compression_level)
 {
+	compress_from(
+		log_container_.uncompressed_file,
+		log_container_.uncompressed_file_size,
+		compression_method,
+		compression_level);
+}
+
+void LogContainerHandler::compress_from(
+	const uint8_t* data,
+	size_t size,
+	uint16_t compression_method,
+	int compression_level)
+{
+	if (!data && size != 0) {
+		throw std::runtime_error("compress_from: data is null");
+	}
+	if (size > BUFFER_MAX_SIZE) {
+		throw std::runtime_error("compress_from: size exceeds BUFFER_MAX_SIZE");
+	}
+
 	log_container_.compression_method = compression_method;
+	log_container_.uncompressed_file_size = static_cast<uint32_t>(size);
 	switch (compression_method)
 	{
 	case 0:
-		memcpy(log_container_.compressed_file,
-			log_container_.uncompressed_file,
-			log_container_.uncompressed_file_size);
+		memcpy(log_container_.compressed_file, data, size);
 		log_container_.compressed_file_size = log_container_.uncompressed_file_size;
 		log_container_.header_base.object_size = calculate_size() + log_container_.compressed_file_size;
 
 		break;
 	case 2:
 		{
-			uLong compress_size = compressBound(log_container_.uncompressed_file_size);
+			uLong compress_size = compressBound(static_cast<uLong>(size));
 			int ret = ::compress2(
 									reinterpret_cast<Byte*>(log_container_.compressed_file),
 									&compress_size,
-									reinterpret_cast<Byte*>(log_container_.uncompressed_file),
-									log_container_.uncompressed_file_size,
+									reinterpret_cast<const Byte*>(data),
+									static_cast<uLong>(size),
 									compression_level);
 			if (ret != Z_OK)
 			{

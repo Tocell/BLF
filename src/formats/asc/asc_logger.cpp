@@ -362,7 +362,7 @@ void AscLogger::writer_thread_handler()
 {
 	constexpr auto kWakeInterval = std::chrono::microseconds(10);
 
-	while (is_running_.load())
+	while (true)
 	{
 		BusMessagePtr msg;
 		std::queue<BusMessagePtr> msg_queue;

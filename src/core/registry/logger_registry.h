@@ -1,7 +1,7 @@
 #ifndef LOGGER_REGISTRY_H
 #define LOGGER_REGISTRY_H
 #include <functional>
-#include <map>
+#include <unordered_map>
 
 #include "logger.h"
 
@@ -40,7 +40,7 @@ private:
 	LoggerRegistry() = default;
 	~LoggerRegistry() = default;
 
-	std::map<FileFormat, CreatorFunc> registry_;
+	std::unordered_map<FileFormat, CreatorFunc> registry_;
 };
 
 }
