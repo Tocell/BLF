@@ -36,6 +36,7 @@ endforeach()
 
 add_subdirectory(src)
 
+# 生成最终的 blfConfig.cmake 配置文件
 configure_package_config_file(
         "${CMAKE_CURRENT_SOURCE_DIR}/cmake/blfConfig.cmake.in"
         "${CMAKE_CURRENT_BINARY_DIR}/blfConfig.cmake"
