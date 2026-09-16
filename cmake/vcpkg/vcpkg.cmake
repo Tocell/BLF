@@ -1,0 +1,30 @@
+# 设置 cross platform compile toolchain
+if(DEFINED CROSS_TOOLCHAIN_FILE AND CROSS_TOOLCHAIN_FILE)
+    if(IS_ABSOLUTE "${CROSS_TOOLCHAIN_FILE}")
+        set(MY_TOOLCHAIN_FILE_PATH "${CROSS_TOOLCHAIN_FILE}")
+        message(STATUS "absolute toolchain file: ${MY_TOOLCHAIN_FILE_PATH}")
+    else()
+        message(STATUS "relative toolchain file: ${CROSS_TOOLCHAIN_FILE}")
+        get_filename_component(TEMP_ABS_PATH "${CROSS_TOOLCHAIN_FILE}" ABSOLUTE BASE_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
+        set(MY_TOOLCHAIN_FILE_PATH "${TEMP_ABS_PATH}")
+        message(STATUS "after convertion, toolchain file: ${MY_TOOLCHAIN_FILE_PATH}")
+    endif()
+
+    set(VCPKG_CHAINLOAD_TOOLCHAIN_FILE "${MY_TOOLCHAIN_FILE_PATH}")
+    set(VCPKG_OVERLAY_TRIPLETS "${CMAKE_CURRENT_LIST_DIR}/triplets")
+endif ()
+
+# 设置 vcpkg cmake toolchain
+if(DEFINED MY_VCPKG_ROOT AND MY_VCPKG_ROOT)
+    if (IS_ABSOLUTE "${MY_VCPKG_ROOT}")
+        set(MY_VCPKG_TOOLCHAIN_FILE "${MY_VCPKG_ROOT}")
+    else ()
+        get_filename_component(TEMP_VCPKG_ROOT_PATH "${MY_VCPKG_ROOT}" ABSOLUTE BASE_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
+        set(MY_VCPKG_TOOLCHAIN_FILE "${TEMP_VCPKG_ROOT_PATH}")
+    endif ()
+else ()
+    set(MY_VCPKG_TOOLCHAIN_FILE "${CMAKE_CURRENT_LIST_DIR}")
+endif ()
+
+set(CMAKE_TOOLCHAIN_FILE "${MY_VCPKG_TOOLCHAIN_FILE}/vcpkg/scripts/buildsystems/vcpkg.cmake" CACHE STRING "Vcpkg toolchain file")
+message(STATUS "Vcpkg toolchain: ${CMAKE_TOOLCHAIN_FILE}")

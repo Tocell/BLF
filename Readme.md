@@ -271,6 +271,31 @@ Windows 下请确保 Visual Studio C++ 工具链和 Windows SDK 安装完整。
 - zlib
 - Conan
 
+## 安装与 CMake 集成
+
+在已经配置好依赖和工具链的构建目录中执行：
+
+```shell
+cmake --build build --config Release --target blf
+cmake --install build --config Release --prefix /path/to/blf-install
+```
+
+也可以在首次配置时通过 `-DCMAKE_INSTALL_PREFIX=/path/to/blf-install` 设置安装位置。
+安装内容包括动态库、`include/blf/` 下的公共头文件，以及
+`${CMAKE_INSTALL_LIBDIR}/cmake/blf/` 下的 CMake 包配置（库目录通常为 `lib` 或 `lib64`）。
+Windows 下 DLL 安装到 `bin/`，导入库安装到库目录。
+
+消费项目的 `CMakeLists.txt`：
+
+```cmake
+find_package(blf CONFIG REQUIRED)
+target_link_libraries(your_target PRIVATE blf::blf)
+```
+
+配置消费项目时传入 `-DCMAKE_PREFIX_PATH=/path/to/blf-install`。
+通过 target 自动获得头文件路径和 C++17 要求，代码中可以使用 `#include <gw_logger.h>`。
+手动安装时，运行环境仍需能够找到 BLF 动态库及其动态依赖。
+
 ## 编译说明
 ### Linux
  ```text

@@ -1,5 +1,6 @@
-find_package(benchmark REQUIRED)
+find_package(benchmark CONFIG REQUIRED)
 find_package(ZLIB REQUIRED)
+find_package(spdlog CONFIG REQUIRED)
 
 file(GLOB SOURCE CONFIGURE_DEPENDS
         ${CMAKE_CURRENT_SOURCE_DIR}/*.cpp
@@ -31,17 +32,25 @@ file(GLOB SOURCE CONFIGURE_DEPENDS
 )
 
 add_library(blf SHARED ${SOURCE})
+add_library(blf::blf ALIAS blf)
+target_compile_features(blf PUBLIC cxx_std_17)
 
 target_link_libraries(blf PRIVATE
         ZLIB::ZLIB
+        spdlog::spdlog
 )
 target_include_directories(blf
         PUBLIC
-        ${CMAKE_CURRENT_SOURCE_DIR}/include
-        ${CMAKE_CURRENT_SOURCE_DIR}/include/can
-        ${CMAKE_CURRENT_SOURCE_DIR}/include/lin
-        ${CMAKE_CURRENT_SOURCE_DIR}/include/flexray
-        ${CMAKE_CURRENT_SOURCE_DIR}/include/ethernet
+        "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
+        "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/can>"
+        "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/lin>"
+        "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/flexray>"
+        "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/ethernet>"
+        "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/blf>"
+        "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/blf/can>"
+        "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/blf/lin>"
+        "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/blf/flexray>"
+        "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/blf/ethernet>"
 
         PRIVATE
         ${CMAKE_CURRENT_SOURCE_DIR}
@@ -81,5 +90,17 @@ if (WIN32)
     # 指定Windows版本
     target_compile_definitions(blf PRIVATE _WIN32_WINNT=0x0A00)
 endif ()
+
+install(TARGETS blf
+        EXPORT blfTargets
+        RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}"
+        LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
+        ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}"
+)
+
+install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/include/"
+        DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/blf"
+        FILES_MATCHING PATTERN "*.h"
+)
 
 add_subdirectory(examples)

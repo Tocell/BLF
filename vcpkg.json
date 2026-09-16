@@ -1,0 +1,23 @@
+{
+  "name": "blf",
+  "version": "1.0.1",
+  "dependencies": [
+    "spdlog",
+    "benchmark",
+    "zlib"
+  ],
+  "overrides": [
+    {
+      "name": "spdlog",
+      "version": "1.15.1"
+    },
+    {
+      "name": "benchmark",
+      "version": "1.9.5"
+    },
+    {
+      "name": "zlib",
+      "version": "1.3.1"
+    }
+  ]
+}
