@@ -1,4 +1,3 @@
-find_package(benchmark CONFIG REQUIRED)
 find_package(ZLIB REQUIRED)
 find_package(spdlog CONFIG REQUIRED)
 
@@ -103,4 +102,6 @@ install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/include/"
         FILES_MATCHING PATTERN "*.h"
 )
 
-add_subdirectory(examples)
+if(BLF_BUILD_EXAMPLES OR BLF_BUILD_BENCHMARKS)
+    add_subdirectory(examples)
+endif()

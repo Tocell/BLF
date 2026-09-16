@@ -1,9 +1,18 @@
 cmake_minimum_required(VERSION 3.20)
-include(cmake/vcpkg/vcpkg.cmake)
+if(NOT DEFINED CMAKE_TOOLCHAIN_FILE)
+    include(cmake/vcpkg/vcpkg.cmake)
+endif()
 project(blf_logger VERSION 1.0.1)
+
+if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
+    set(CMAKE_INSTALL_PREFIX "${PROJECT_SOURCE_DIR}/output"
+        CACHE PATH "Default installation path" FORCE)
+endif()
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_C_STANDARD 99)
+option(BLF_BUILD_EXAMPLES "Build example programs" ON)
+option(BLF_BUILD_BENCHMARKS "Build benchmark program" OFF)
 
 if (MSVC)
     add_compile_options("$<$<CXX_COMPILER_ID:MSVC>:/utf-8>")

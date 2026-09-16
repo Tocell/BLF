@@ -1,0 +1,8 @@
+blf provides CMake targets:
+
+    find_package(blf CONFIG REQUIRED)
+    target_link_libraries(main PRIVATE blf::blf)
+
+Include the public API with:
+
+    #include <gw_logger.h>

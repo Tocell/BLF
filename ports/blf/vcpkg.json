@@ -1,0 +1,14 @@
+{
+  "name": "blf",
+  "version": "2.0.1",
+  "description": "C++17 library for reading and writing BLF and ASC bus logs",
+  "homepage": "https://github.com/Tocell/BLF",
+  "license": "MIT",
+  "supports": "!(static & staticcrt)",
+  "dependencies": [
+    "spdlog",
+    "zlib",
+    { "name": "vcpkg-cmake", "host": true },
+    { "name": "vcpkg-cmake-config", "host": true }
+  ]
+}

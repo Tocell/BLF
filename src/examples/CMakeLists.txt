@@ -1,17 +1,12 @@
-add_executable(write_blf write_blf.cpp)
-target_link_libraries(write_blf blf)
+if(BLF_BUILD_EXAMPLES)
+    foreach(example IN ITEMS write_blf write_asc parser_blf parser_asc blf_to_asc)
+        add_executable(${example} ${example}.cpp)
+        target_link_libraries(${example} PRIVATE blf::blf)
+    endforeach()
+endif()
 
-add_executable(write_asc write_asc.cpp)
-target_link_libraries(write_asc blf)
-
-add_executable(parser_blf parser_blf.cpp)
-target_link_libraries(parser_blf blf)
-
-add_executable(parser_asc parser_asc.cpp)
-target_link_libraries(parser_asc blf)
-
-add_executable(blf_to_asc blf_to_asc.cpp)
-target_link_libraries(blf_to_asc blf)
-
-add_executable(benchmark_test benchmark.cpp)
-target_link_libraries(benchmark_test blf benchmark::benchmark_main)
+if(BLF_BUILD_BENCHMARKS)
+    find_package(benchmark CONFIG REQUIRED)
+    add_executable(benchmark_test benchmark.cpp)
+    target_link_libraries(benchmark_test PRIVATE blf::blf benchmark::benchmark_main)
+endif()
